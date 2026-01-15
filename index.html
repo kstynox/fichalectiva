@@ -1,0 +1,2090 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reporte de Fichas (P4-04 / PE-04)</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#fff; --text:#0f172a; --muted:#64748b; --border:#e5e7eb;
+      --brand:#39A900; --brand2:#2E7D00; --soft:#f8fafc; --shadow:0 10px 26px rgba(15,23,42,.08);
+      --focus:0 0 0 4px rgba(57,169,0,.18);
+      --danger:#dc2626; --warn:#f59e0b; --ok:#16a34a;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+    .site-header{background:#fff;border-top:1px solid var(--border);box-shadow:0 2px 10px rgba(15,23,42,.06);position:sticky;top:0;z-index:20}
+    .header-wrap{max-width:1500px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .header-left{display:flex;align-items:center;gap:14px;min-width:0}
+    .logo{width:58px;height:58px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+    .logo img{width:58px;height:58px;object-fit:contain}
+    .org{min-width:0}
+    .org .l1{font-weight:950}
+    .org .l2{color:var(--muted);font-weight:850;font-size:12px;margin-top:2px}
+    .title{flex:1;text-align:center;font-weight:950;color:var(--brand2);font-size:18px}
+    .line{height:4px;background:var(--brand)}
+    @media (max-width:900px){.header-wrap{flex-direction:column;align-items:flex-start}.title{text-align:left}}
+
+    main{max-width:1500px;margin:18px auto 28px;padding:0 16px;display:flex;flex-direction:column;gap:14px;flex:1}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    #uploadCard.is-hidden{display:none;}
+
+    .card-h{padding:14px 14px 12px;border-bottom:1px solid var(--border);background:var(--soft)}
+    .card-h h2{margin:0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .card-b{padding:12px 14px 14px}
+
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .hint{color:var(--muted);font-size:12px;line-height:1.35}
+    .meta{font-weight:950;color:var(--muted)}
+
+    .btn{border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-weight:950;font-size:13px;cursor:pointer;background:#fff;color:var(--text);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+    .btn:focus{outline:none;box-shadow:var(--focus)}
+    .btn.primary{border-color:rgba(57,169,0,.40);background:var(--brand);color:#fff}
+    .btn.primary:hover{background:var(--brand2)}
+    .btn.subtle{background:var(--soft)}
+    .btn.small{padding:8px 10px;font-size:12px}
+
+    .search{flex:1;min-width:240px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;outline:none;font-weight:650;color:var(--text);background:#fff}
+    .search:focus{box-shadow:var(--focus);border-color:rgba(57,169,0,.35)}
+
+    .chipbar{display:flex;gap:8px;flex-wrap:wrap}
+      .chip{border:1px solid var(--border);border-radius:999px;padding:7px 10px;font-size:12px;font-weight:600;color:var(--text);background:#fff;cursor:pointer;user-select:none;transition:background .15s ease,border-color .15s ease,color .15s ease}
+    .chip:hover{border-color:rgba(57,169,0,.35)}
+    .chip.hidden{display:none}
+    .chip.active{border-color:rgba(57,169,0,.65);background:var(--brand);color:#fff;box-shadow:var(--focus)}
+    .chip.all:not(.active){background:#fff}
+
+    .chip.color-purple.active{background:#6d28d9;border-color:#6d28d9;color:#fff;box-shadow:none}
+    .chip.color-blue.active{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:none}
+    .chip.color-yellow.active{background:#f59e0b;border-color:#f59e0b;color:#111827;box-shadow:none}
+    
+    .prog-groups{display:flex;flex-direction:column;gap:10px}
+    .prog-group{border:1px dashed rgba(100,116,139,.25);border-radius:14px;padding:8px 10px;background:#fff}
+.muni-wrap{border:1px solid var(--border);background:#fff;border-radius:14px;padding:10px}
+    .muni-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+    .muni-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;max-height:170px;overflow:auto;padding-right:6px}
+.muni-item{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:7px 10px;background:#fff;}
+.muni-item.hidden{display:none}
+.muni-item input{width:14px;height:14px;}
+.muni-item span{font-size:11px;font-weight:500;color:var(--text)}
+
+    /* KPIs */
+    .kpis{display:flex;gap:14px;flex-wrap:wrap;align-items:stretch}
+    .kpi-pair{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    @media (max-width:720px){.kpi-pair{grid-template-columns:1fr}}
+
+    .kpi-box{flex:1;min-width:220px;border:1px solid var(--border);background:#fff;border-radius:14px;padding:14px 16px}
+    .kpi-top{display:flex;align-items:center;gap:10px}
+    .kpi-ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--soft);border:1px solid var(--border);font-size:18px}
+    .kpi-cap{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;font-weight:950}
+    .kpi-big{font-size:28px;font-weight:950;letter-spacing:.5px;margin-top:10px}
+    .kpi-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+    .kpi-name{font-size:13px;font-weight:950;color:var(--text)}
+    .kpi-pct{font-size:16px;font-weight:950}
+    .kpi-pct.women{color:#e11d48}
+    .kpi-pct.nb{color:#7c3aed}
+    .kpi-bar{height:6px;border-radius:999px;background:var(--soft);border:1px solid var(--border);margin-top:10px;overflow:hidden}
+    .kpi-fill{height:100%;width:0%}
+    .kpi-fill.men{background:#2563eb}
+    .kpi-fill.women{background:#e11d48}
+    .kpi-fill.nb{background:#7c3aed}
+    .kpi-sub{font-size:11px;color:var(--muted);font-weight:850;margin-top:8px}
+    .kpi-split .kpi-sub{margin-top:10px}
+    /* Table */
+    .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:14px}
+    table{width:100%;border-collapse:separate;border-spacing:0;min-width:1280px}
+    thead th{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);z-index:5;cursor:pointer;user-select:none}
+    th,td{padding:10px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;font-size:12px}
+    tbody tr:hover{background:#f8fafc}
+    th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .nowrap{white-space:nowrap}
+    .muted{color:var(--muted)}
+    .kpi{display:flex;align-items:center;gap:8px}
+    .dot{width:10px;height:10px;border-radius:999px;background:#94a3b8;flex:0 0 auto}
+    .dot.red{background:var(--danger)}
+    .dot.yellow{background:var(--warn)}
+    .dot.green{background:var(--ok)}
+    .sort-ind{font-size:11px;font-weight:950;color:var(--muted);margin-left:6px}
+
+    .diascol{width:90px; white-space:normal; line-height:1.05;}
+    .smallnote{font-size:11px;color:var(--muted);margin-top:8px}
+    .dias-col{width:90px;min-width:90px;max-width:90px;line-height:1.05;text-align:center;}
+    td.dias-td{text-align:center;}
+
+    /* Footer (abajo, sin superponerse) */
+    body{min-height:100vh;display:flex;flex-direction:column;}
+    main{flex:1;}
+    .page-footer{max-width:1500px;margin:0 auto 18px;padding:0 16px;margin-top:auto}
+    .footer-kicker{font-size:12px;letter-spacing:.25em;color:#94a3b8;font-weight:900;text-transform:uppercase;text-align:center;margin:10px 0;}
+    .footer-card{width:min(980px,100%);margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:999px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 8px 24px rgba(15,23,42,.06);}
+    .pill-left,.pill-right{display:flex;align-items:center;gap:10px;}
+    .pill-center{display:flex;align-items:center;gap:12px;min-width:0;flex:1;}
+    .pill-btn{width:40px;height:40px;border-radius:999px;border:none;cursor:default;display:flex;align-items:center;justify-content:center;background:rgba(57,169,0,.12);color:var(--brand);}
+    .pill-btn.orange{background:#f59e0b;color:#fff;}
+    .pill-badge{border:1px solid var(--border);background:#fff;border-radius:999px;padding:8px 10px;font-size:12px;color:var(--muted);font-weight:900;white-space:nowrap;}
+    .footer-avatar{width:40px;height:40px;border-radius:999px;background:rgba(57,169,0,.10);border:1px solid rgba(57,169,0,.15);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto;}
+    .titles{min-width:0}
+    .t2{font-size:11px;font-weight:950;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;line-height:1.1}
+    .t1{font-size:14px;font-weight:950;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px;}
+    @media (max-width:640px){
+      .footer-card{border-radius:22px;flex-wrap:wrap;justify-content:center}
+      .t1{max-width:240px;}
+    }
+
+    /* Switch toggle */
+    .filter-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .switcher{display:flex;align-items:center;gap:8px}
+    .switcher .lbl{font-size:11px;color:var(--muted);font-weight:900}
+    .switch{position:relative;display:inline-block;width:52px;height:28px;flex:0 0 auto}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#e5e7eb;transition:.2s;border-radius:999px;border:1px solid var(--border)}
+    .slider:before{position:absolute;content:"";height:22px;width:22px;left:3px;top:2px;background:white;transition:.2s;border-radius:999px;box-shadow:0 3px 10px rgba(15,23,42,.12)}
+    .switch input:checked + .slider{background:rgba(57,169,0,.22);border-color:rgba(57,169,0,.55)}
+    .switch input:checked + .slider:before{transform:translateX(24px);background:var(--brand)}
+    .switch input:focus + .slider{box-shadow:var(--focus)}
+
+    /* Disabled chips */
+    .chip.hidden{display:none}
+
+    /* Program group colors when active */
+    .chip.purple.active{background:#6d28d9;border-color:#6d28d9;color:#fff}
+    .chip.yellow.active{background:#facc15;border-color:#facc15;color:#111827}
+    .chip.blue.active{background:#2563eb;border-color:#2563eb;color:#fff}
+
+
+    /* Pagination */
+    .pager{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+    .pager .info{color:var(--muted);font-size:12px;font-weight:850}
+    .pager .pbtn{border:1px solid var(--border);background:#fff;border-radius:10px;padding:8px 10px;font-weight:950;font-size:12px;cursor:pointer}
+
+    .pnums{display:flex;gap:6px;align-items:center;flex-wrap:wrap;max-width:520px;overflow:auto;padding:2px 4px;border-radius:12px}
+    .pnum{border:1px solid var(--border);background:#fff;border-radius:10px;padding:8px 10px;font-weight:700;font-size:12px;cursor:pointer;min-width:34px}
+    .pnum:hover{border-color:rgba(57,169,0,.35)}
+    .pnum.active{border-color:rgba(57,169,0,.65);background:var(--brand);color:#fff}
+
+    .pager .pbtn:disabled{opacity:.45;cursor:not-allowed}
+    .pager .page{min-width:52px;text-align:center;font-weight:950;color:var(--text)}
+    /* Program grids */
+    .prog-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+    @media (max-width:1200px){.prog-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
+    @media (max-width:900px){.prog-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+    @media (max-width:640px){.prog-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    /* Municipio checkbox */
+    .muni-item{font-size:11px;font-weight:400;display:flex;align-items:center;gap:6px;white-space:nowrap}
+
+
+    /* Upload accordion + dropzone */
+    .file-input-hidden{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;}
+    details{border:1px solid var(--border);background:#fff;border-radius:16px;overflow:hidden}
+    details>summary{list-style:none;cursor:pointer}
+    details>summary::-webkit-details-marker{display:none}
+    .acc-sum{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--soft);font-size:13px;font-weight:850;color:var(--muted)}
+    .acc-right{font-weight:800;color:var(--muted);font-size:12px}
+    .dropzone{border:2px dashed rgba(57,169,0,.65);border-radius:14px;padding:18px 14px;background:#fff;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;min-height:92px;background:rgba(57,169,0,.04);}
+    .dropzone.drag{border-color:rgba(57,169,0,.65);background:rgba(57,169,0,.06)}
+    .dz-title{font-weight:850}
+    .dz-sub{font-size:12px;color:var(--muted);font-weight:700}
+    .progress-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .progress-label{font-size:12px;font-weight:800;color:var(--muted)}
+    .progress-pct{font-size:12px;font-weight:900;color:var(--text)}
+    .progress-track{height:10px;border-radius:999px;background:#eef2f7;border:1px solid var(--border);overflow:hidden;margin-top:8px}
+    .progress-bar{height:100%;background:var(--brand);border-radius:999px}
+
+
+    /* KPI extra */
+    .kpi-mini-list{margin-top:10px;display:grid;gap:6px}
+    .kpi-mini-item{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:500}
+    .kpi-mini-item b{color:var(--text);font-weight:600}
+
+
+    .kpi-wide{grid-column:span 2}
+    .kpi-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .kpi-badge{border:1px solid var(--border);background:#fff;border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted);font-weight:650}
+    .kpi-bars{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+    .kpi-bar{height:10px;border-radius:999px;background:#eef2f7;overflow:hidden;border:1px solid var(--border)}
+    .kpi-bar-fill{height:100%;background:var(--brand);border-radius:999px}
+    .kpi-big{font-size:22px;font-weight:900;margin-top:6px}
+    
+
+/* ===== KPI redesign (v37->v38) ===== */
+#kpis{display:flex;flex-direction:column;gap:14px}
+#kpis .kpi-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:1100px){#kpis .kpi-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){#kpis .kpi-summary-grid{grid-template-columns:1fr}}
+
+#kpis .kpi-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px 16px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
+#kpis .kpi-card-critical{border-color:rgba(220,38,38,.25)}
+#kpis .kpi-card-top{display:flex;align-items:center;justify-content:flex-start;gap:10px}
+#kpis .kpi-card-top-right{justify-content:space-between}
+#kpis .kpi-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid var(--border);background:var(--soft)}
+#kpis .kpi-icon-blue{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.20)}
+#kpis .kpi-icon-green{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.20)}
+#kpis .kpi-icon-amber{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.22)}
+#kpis .kpi-icon-red{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.22)}
+
+#kpis .kpi-tag{font-size:11px;font-weight:700;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--muted);white-space:nowrap}
+#kpis .kpi-tag-critical{color:var(--danger);border-color:rgba(220,38,38,.25);background:rgba(220,38,38,.06)}
+#kpis .kpi-card-label{margin-top:10px;font-size:12px;color:var(--muted);font-weight:700}
+#kpis .kpi-card-value{font-size:30px;font-weight:850;letter-spacing:.4px;margin-top:4px}
+#kpis .kpi-card-value-critical{color:var(--danger)}
+#kpis .kpi-card-sub{margin-top:6px;font-size:11px;color:#94a3b8;font-weight:650}
+
+#kpis .kpi-panels-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:1100px){#kpis .kpi-panels-grid{grid-template-columns:1fr}}
+#kpis .kpi-panel{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px 16px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
+#kpis .kpi-panel-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:10px}
+
+#kpis .kpi-metric{margin-top:10px}
+#kpis .kpi-metric-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:var(--text);font-weight:650}
+#kpis .kpi-metric-name{color:var(--muted);font-weight:650}
+#kpis .kpi-metric-val{font-weight:800;color:var(--text)}
+#kpis .kpi-bar{height:10px;border-radius:999px;background:#eef2f7;border:1px solid rgba(148,163,184,.25);overflow:hidden;margin-top:7px}
+#kpis .kpi-bar-fill{height:100%;width:0%;border-radius:999px;background:var(--brand)}
+#kModBarV{background:#3b82f6}
+#kModBarD{background:#f59e0b}
+#kBarF{background:#ec4899}
+#kBarM{background:#3b82f6}
+#kBarN{background:#a855f7}
+
+#kpis .kpi-level-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:8px}
+#kpis .kpi-level-box{border:1px solid var(--border);border-radius:14px;padding:16px;background:var(--soft);text-align:center}
+#kpis .kpi-level-num{font-size:22px;font-weight:850;color:var(--text)}
+#kpis .kpi-level-label{margin-top:4px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+
+#kpis .kpi-gender{margin-top:12px}
+#kpis .kpi-gender-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#kpis .kpi-gender-name{font-size:12px;font-weight:750;color:var(--text)}
+#kpis .kpi-gender-val{font-size:11px;color:var(--muted);font-weight:650;white-space:nowrap}
+@media (max-width:420px){#kpis .kpi-gender-val{white-space:normal}}
+
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-wrap">
+    <div class="header-left">
+      <div class="logo" aria-hidden="true">
+        <img src="data:image/png;base64,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" alt="SENA" />
+      </div>
+      <div class="org">
+        <div class="l1">Servicio Nacional de Aprendizaje - SENA</div>
+        <div class="l2">Reporte para Formación (carga P4-04 / PE-04)</div>
+      </div>
+    </div>
+    <div class="title">Formacion Titulada etapa Lectiva</div>
+  </div>
+  <div class="line"></div>
+</header>
+
+<main>
+  <section class="card" id="uploadCard">
+    <details id="uploadAccordion" open>
+      <summary class="acc-sum">
+        <span>Cargar archivo</span>
+        <span class="acc-right" id="uploadSummaryRight"></span>
+      </summary>
+      <div class="card-b">
+        <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Zona para cargar archivo XML">
+          <div class="dz-title">Arrastre y suelte el XML aquí o haga clic para seleccionar</div>
+          <div class="dz-sub">Formatos: .xml (P4-04 / PE-04)</div>
+          <input id="file" type="file" accept=".xml" class="file-input-hidden" />
+        </div>
+
+        <div class="progress" id="progressWrap" style="display:none;margin-top:12px">
+          <div class="progress-row">
+            <div class="progress-label" id="progressLabel">Cargando…</div>
+            <div class="progress-pct" id="progressPct">0%</div>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" id="progressBar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h2>Filtros</h2></div>
+    <div class="card-b" style="display:flex;flex-direction:column;gap:12px">
+      <div class="row">
+        <input id="q" class="search" type="search" placeholder="Buscar en ficha, programa, responsable, municipio…" aria-label="Buscar" />
+        <span class="meta" id="countTop">0 resultados</span>
+        <button class="btn subtle" id="clearBtn" type="button" aria-label="Limpiar filtros">Limpiar filtros</button>
+      </div>
+
+      <div>
+        <div class="filter-head">
+          <div class="hint" style="margin-bottom:6px"><b>Modalidad de formación</b> (selección múltiple)</div>
+          <div class="switcher" aria-label="Seleccionar todo o nada">
+            <span class="lbl">Nada</span>
+            <label class="switch"><input type="checkbox" id="modalidadSwitch" checked><span class="slider"></span></label>
+            <span class="lbl">Todos</span>
+          </div>
+        </div>
+        <div class="chipbar" id="modalidadChips"></div>
+      </div>
+
+      <div>
+        <div class="filter-head">
+          <div class="hint" style="margin-bottom:6px"><b>Programa especial</b> (selección múltiple)</div>
+          <div class="switcher" aria-label="Seleccionar todo o nada">
+            <span class="lbl">Nada</span>
+            <label class="switch"><input type="checkbox" id="especialSwitch" checked><span class="slider"></span></label>
+            <span class="lbl">Todos</span>
+          </div>
+        </div>
+        <div class="chipbar" id="especialChips"></div>
+      </div>
+
+      <div class="muni-wrap">
+        <div class="muni-head">
+          <div class="hint"><b>Municipios</b> (selección múltiple)</div>
+          <div class="switcher" style="margin-left:auto">
+            <span class="lbl">Nada</span>
+            <label class="switch"><input type="checkbox" id="muniSwitch" checked><span class="slider"></span></label>
+            <span class="lbl">Todos</span>
+          </div>
+
+          <input id="muniSearch" class="search" style="min-width:220px;flex:0 1 320px" type="search" placeholder="Filtrar municipios…" aria-label="Buscar municipio" />
+          
+          
+        </div>
+        <div class="muni-list" id="muniChips"></div>
+      </div>
+
+      <div>
+        <div class="hint" style="margin-bottom:6px"><b>Programa de formación</b> (selección múltiple)</div>
+        <div class="switcher" style="margin-top:6px">
+          <span class="lbl">Nada</span>
+          <label class="switch"><input type="checkbox" id="progSwitch" checked><span class="slider"></span></label>
+          <span class="lbl">Todos</span>
+        </div>
+        <div class="chipbar" id="progChipsAll"></div>
+        <div class="prog-groups">
+          <div class="prog-group">
+            <div class="filter-head" style="margin:6px 0 4px">
+              <div class="hint" style="margin:0"></div>
+              <div class="switcher">
+                <span class="lbl">Nada</span>
+                <label class="switch"><input type="checkbox" id="purpleSwitch"><span class="slider"></span></label>
+                <span class="lbl">Todos</span>
+              </div>
+            </div>
+            <div class="chipbar prog-grid" id="progChipsPurple"></div>
+          </div>
+          <div class="prog-group">
+            <div class="filter-head" style="margin:6px 0 4px">
+              <div class="hint" style="margin:0"></div>
+              <div class="switcher">
+                <span class="lbl">Nada</span>
+                <label class="switch"><input type="checkbox" id="yellowSwitch"><span class="slider"></span></label>
+                <span class="lbl">Todos</span>
+              </div>
+            </div>
+            <div class="chipbar prog-grid" id="progChipsYellow"></div>
+          </div>
+          <div class="prog-group">
+            <div class="filter-head" style="margin:6px 0 4px">
+              <div class="hint" style="margin:0"></div>
+              <div class="switcher">
+                <span class="lbl">Nada</span>
+                <label class="switch"><input type="checkbox" id="blueSwitch"><span class="slider"></span></label>
+                <span class="lbl">Todos</span>
+              </div>
+            </div>
+            <div class="chipbar prog-grid" id="progChipsBlue"></div>
+          </div>
+          <div class="prog-group" id="progGroupOthers" style="display:none">
+            <div class="hint" style="margin:6px 0 4px"><b>Otros</b></div>
+            <div class="chipbar prog-grid" id="progChipsOther"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-h" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <h2>Resultados</h2>
+      <div class="row">
+        <input id="qTop" class="search" style="min-width:260px;max-width:420px" type="search" placeholder="Buscar en la tabla…" aria-label="Buscar en la tabla" />
+
+        <button class="btn primary" id="exportBtn" type="button">Exportar a Excel</button>
+      </div>
+    </div>
+    <div class="card-b" style="display:flex;flex-direction:column;gap:12px">
+      
+<div class="kpis" id="kpis">
+  <!-- KPI resumen (fila superior) -->
+  <div class="kpi-summary-grid">
+    <div class="kpi-card">
+      <div class="kpi-card-top">
+        <div class="kpi-icon kpi-icon-blue" aria-hidden="true">👥</div>
+      </div>
+      <div class="kpi-card-label">Total Aprendices</div>
+      <div class="kpi-card-value" id="kTotalApr">0</div>
+      <div class="kpi-card-sub">Suma de columna TOTAL_APRENDICES</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-card-top">
+        <div class="kpi-icon kpi-icon-green" aria-hidden="true">📄</div>
+      </div>
+      <div class="kpi-card-label">Total Fichas</div>
+      <div class="kpi-card-value" id="kRegs">0</div>
+      <div class="kpi-card-sub">Número de fichas en el reporte</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-card-top kpi-card-top-right">
+        <div class="kpi-icon kpi-icon-amber" aria-hidden="true">⏳</div>
+        <div class="kpi-tag kpi-tag-muted">Próximos 6 meses</div>
+      </div>
+      <div class="kpi-card-label">Cierre &lt; 180 Días</div>
+      <div class="kpi-card-value" id="kF180">0</div>
+      <div class="kpi-card-sub">Fichas con cierre cercano</div>
+    </div>
+
+    <div class="kpi-card kpi-card-critical">
+      <div class="kpi-card-top kpi-card-top-right">
+        <div class="kpi-icon kpi-icon-red" aria-hidden="true">🚨</div>
+        <div class="kpi-tag kpi-tag-critical">Crítico</div>
+      </div>
+      <div class="kpi-card-label">Cierre &lt; 90 Días</div>
+      <div class="kpi-card-value kpi-card-value-critical" id="kF90">0</div>
+      <div class="kpi-card-sub">Atención prioritaria</div>
+    </div>
+  </div>
+
+  <!-- KPI analíticos (fila inferior) -->
+  <div class="kpi-panels-grid">
+    <!-- Fichas por modalidad -->
+    <div class="kpi-panel">
+      <div class="kpi-panel-title">Fichas por Modalidad</div>
+
+      <div class="kpi-metric">
+        <div class="kpi-metric-head">
+          <span class="kpi-metric-name">Presencial</span>
+          <span class="kpi-metric-val" id="kModP">0</span>
+        </div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kModBarP"></div></div>
+      </div>
+
+      <div class="kpi-metric">
+        <div class="kpi-metric-head">
+          <span class="kpi-metric-name">Virtual</span>
+          <span class="kpi-metric-val" id="kModV">0</span>
+        </div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kModBarV"></div></div>
+      </div>
+
+      <div class="kpi-metric">
+        <div class="kpi-metric-head">
+          <span class="kpi-metric-name">A Distancia</span>
+          <span class="kpi-metric-val" id="kModD">0</span>
+        </div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kModBarD"></div></div>
+      </div>
+    </div>
+
+    <!-- Fichas por nivel -->
+    <div class="kpi-panel">
+      <div class="kpi-panel-title">Fichas por Nivel</div>
+      <div class="kpi-level-grid">
+        <div class="kpi-level-box">
+          <div class="kpi-level-num" id="kLvlTecno">0</div>
+          <div class="kpi-level-label">TECNÓLOGO</div>
+        </div>
+        <div class="kpi-level-box">
+          <div class="kpi-level-num" id="kLvlTec">0</div>
+          <div class="kpi-level-label">TÉCNICO</div>
+        </div>
+        <div class="kpi-level-box">
+          <div class="kpi-level-num" id="kLvlOp">0</div>
+          <div class="kpi-level-label">OPERARIO</div>
+        </div>
+        <div class="kpi-level-box">
+          <div class="kpi-level-num" id="kLvlAux">0</div>
+          <div class="kpi-level-label">AUXILIAR</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribución por género -->
+    <div class="kpi-panel">
+      <div class="kpi-panel-title">Distribución por Género</div>
+
+      <div class="kpi-gender">
+        <div class="kpi-gender-head">
+          <span class="kpi-gender-name">Femenino</span>
+          <span class="kpi-gender-val"><span id="kWomenAbs">0 aprendices registrados</span> (<span id="kPctF">0%</span>)</span>
+        </div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kBarF"></div></div>
+      </div>
+
+      <div class="kpi-gender">
+        <div class="kpi-gender-head">
+          <span class="kpi-gender-name">Masculino</span>
+          <span class="kpi-gender-val"><span id="kMenAbs">0 aprendices registrados</span> (<span id="kPctM">0%</span>)</span>
+        </div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kBarM"></div></div>
+      </div>
+
+      <div class="kpi-gender">
+        <div class="kpi-gender-head">
+          <span class="kpi-gender-name">No Binario</span>
+          <span class="kpi-gender-val"><span id="kNbAbs">0 aprendices registrados</span> (<span id="kPctN">0%</span>)</span>
+        </div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kBarN"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="table-wrap">
+        <table id="tbl" aria-label="Tabla de fichas">
+          <thead>
+
+            <tr>
+              <th data-key="IDENTIFICADOR_FICHA" class="nowrap">FICHA</th>
+              <th data-key="NIVEL_FORMACION">NIVEL</th>
+              <th data-key="NOMBRE_PROGRAMA_FORMACION">PROGRAMA_FORMACION</th>
+              <th data-key="FECHA_INICIO_FICHA" class="nowrap">INICIO_FICHA</th>
+              <th data-key="FECHA_FIN_ETAPA_LECTIVA" class="nowrap">FIN_ETAPA_LECTIVA</th>
+              <th data-key="DIAS_FALTANTES" class="diascol">DÍAS<br>FALTANTES</th>
+              <th data-key="FECHA_TERMINACION_FICHA" class="nowrap">TERMINACION_FICHA</th>
+              <th data-key="MODALIDAD_FORMACION">MODALIDAD</th>
+              <th data-key="NOMBRE_RESPONSABLE">RESPONSABLE</th>
+              <th data-key="NOMBRE_MUNICIPIO_CURSO">MUNICIPIO</th>
+              <th data-key="TOTAL_APRENDICES_MASCULINOS" class="nowrap">MASC</th>
+              <th data-key="TOTAL_APRENDICES_FEMENINOS" class="nowrap">FEM</th>
+              <th data-key="TOTAL_APRENDICES_NOBINARIO" class="nowrap">NOBIN</th>
+              <th data-key="TOTAL_APRENDICES" class="nowrap">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="14" class="muted">Cargue un archivo para ver resultados.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pager" id="pager"></div>
+      </div>
+      <div class="smallnote" id="note"></div>
+    </div>
+  </section>
+</main>
+
+
+<footer class="page-footer" aria-label="Pie de página">
+  <div class="footer-kicker">DISEÑO Y DESARROLLO</div>
+  <div class="footer-card">
+    <div class="pill-left">
+      <button class="pill-btn orange" type="button" aria-label="Decorativo">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path fill="currentColor" d="M18.3 5.7a1 1 0 0 0-1.4 0L12 10.6 7.1 5.7a1 1 0 1 0-1.4 1.4l4.9 4.9-4.9 4.9a1 1 0 1 0 1.4 1.4l4.9-4.9 4.9 4.9a1 1 0 0 0 1.4-1.4L13.4 12l4.9-4.9a1 1 0 0 0 0-1.4Z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="pill-center">
+      <div class="footer-avatar" aria-hidden="true">👤</div>
+      <div class="titles">
+        <div class="t2">INSTRUCTOR DISEÑADOR</div>
+        <div class="t1">Yeison Castellanos Gordillo</div>
+      </div>
+    </div>
+
+    <div class="pill-right">
+      <span class="pill-badge" id="footerCount">—</span>
+      <button class="pill-btn" type="button" aria-label="Decorativo">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.1 7.1 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.23.4.32.64.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96c.24.1.51.01.64-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+  // ================= Utilidades =================
+  const norm = (s) => String(s ?? "").trim();
+  const normU = (s) => norm(s).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+
+  function parseDate(v){
+    const s = norm(v);
+    if(!s) return null;
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if(iso) return new Date(Number(iso[1]), Number(iso[2])-1, Number(iso[3]));
+    const dm = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if(dm) return new Date(Number(dm[3]), Number(dm[2])-1, Number(dm[1]));
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function fmtDate(d){
+    if(!d) return "";
+    const dd = String(d.getDate()).padStart(2,"0");
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  function addMonths(date, deltaMonths){
+    const d = new Date(date.getTime());
+    const day = d.getDate();
+    d.setMonth(d.getMonth() + deltaMonths);
+    if(d.getDate() < day) d.setDate(0);
+    return d;
+  }
+
+  function daysDiff(a, b){
+    const ms = 24*60*60*1000;
+    const da = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+    const db = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+    return Math.round((db - da)/ms);
+  }
+
+  function toNum(v){
+    const n = Number(String(v ?? "").replace(/[^\d\-\.]/g,""));
+    return isNaN(n) ? 0 : n;
+  }
+
+  async function readFileAsText(file){
+    // Evita error file.text() en navegadores antiguos
+    if(file && typeof file.text === "function") return await file.text();
+    return await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result || ""));
+      r.onerror = () => reject(new Error("No se pudo leer el archivo."));
+      r.readAsText(file);
+    });
+  }
+
+  function readFileAsTextWithProgress(file, onPct){
+    return new Promise((resolve, reject) => {
+      try{
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result || ""));
+        r.onerror = () => reject(new Error("No se pudo leer el archivo."));
+        r.onprogress = (e) => {
+          if(e && e.lengthComputable){
+            const pct = Math.max(0, Math.min(100, Math.round((e.loaded / e.total) * 100)));
+            if(typeof onPct === "function") onPct(pct);
+          }
+        };
+        // 0% initial
+        if(typeof onPct === "function") onPct(0);
+        r.readAsText(file);
+      } catch(err){
+        reject(err);
+      }
+    });
+  }
+
+
+  async function readFileAsTextProgress(file, onProgress){
+    // Lectura con progreso (si el navegador soporta FileReader)
+    return await new Promise((resolve, reject)=>{
+      try{
+        const r = new FileReader();
+        r.onload = ()=> resolve(String(r.result||""));
+        r.onerror = ()=> reject(new Error("No se pudo leer el archivo."));
+        r.onprogress = (e)=>{ if(e && e.lengthComputable && typeof onProgress==="function") onProgress(Math.round((e.loaded/e.total)*100)); };
+        r.readAsText(file);
+      }catch(e){
+        // Fallback
+        file.text().then(t=>resolve(String(t||""))).catch(()=>reject(new Error("No se pudo leer el archivo.")));
+      }
+    });
+  }
+
+  // ================= UI elements =================
+  const $file = document.getElementById("file");
+  const $dropzone = document.getElementById("dropzone");
+  const $progressWrap = document.getElementById("progressWrap");
+  const $progressBar = document.getElementById("progressBar");
+  const $progressPct = document.getElementById("progressPct");
+  const $progressLabel = document.getElementById("progressLabel");
+  const $uploadSummaryRight = document.getElementById("uploadSummaryRight");
+  const $uploadCard = document.getElementById("uploadCard");
+  const $uploadAccordion = document.getElementById("uploadAccordion");
+  const $q = document.getElementById("q");
+  const $qTop = document.getElementById("qTop");
+  const $countTop = document.getElementById("countTop");
+  const $clearBtn = document.getElementById("clearBtn");
+  const $tbody = document.getElementById("tbody");
+  const $note = document.getElementById("note");
+
+  const $modalidadChips = document.getElementById("modalidadChips");
+  const $especialChips = document.getElementById("especialChips");
+  const $muniChips = document.getElementById("muniChips");
+  const $progChipsAll = document.getElementById("progChipsAll");
+  const $progChipsPurple = document.getElementById("progChipsPurple");
+  const $progChipsYellow = document.getElementById("progChipsYellow");
+  const $progChipsBlue = document.getElementById("progChipsBlue");
+  const $progChipsOther = document.getElementById("progChipsOther");
+  const $progGroupOthers = document.getElementById("progGroupOthers");
+const $muniSearch = document.getElementById("muniSearch");
+  const $muniAllBtn = document.getElementById("muniAllBtn");
+  const $muniNoneBtn = document.getElementById("muniNoneBtn");
+  const $exportBtn = document.getElementById("exportBtn");
+const $modalidadSwitch = document.getElementById("modalidadSwitch");
+  const $especialSwitch = document.getElementById("especialSwitch");
+  const $muniSwitch = document.getElementById("muniSwitch");
+  const $progSwitch = document.getElementById("progSwitch");
+  const $purpleSwitch = document.getElementById("purpleSwitch");
+  const $yellowSwitch = document.getElementById("yellowSwitch");
+  const $blueSwitch = document.getElementById("blueSwitch");
+
+  const $kTotalApr = document.getElementById("kTotalApr");
+  const $kPctM = document.getElementById("kPctM");
+  const $kPctF = document.getElementById("kPctF");
+  const $kPctN = document.getElementById("kPctN");
+  const $kRegs = document.getElementById("kRegs");
+
+  // ================= State =================
+  let allRows = [];
+  let viewRows = [];
+  let municipalities = [];
+  let programasFormacion = [];
+
+  const MODALIDADES = ["PRESENCIAL","VIRTUAL","A DISTANCIA"];
+  const ESPECIALES = [
+    "INTEGRACIÓN CON LA EDUCACIÓN MEDIA ACADÉMICA",
+    "INTEGRACIÓN CON LA EDUCACIÓN MEDIA TÉCNICA",
+    "ATENCION A INSTITUCIONES",
+    "CAMPESENA",
+    "SENATEC",
+    "SIN PROGRAMA ESPECIAL"
+  ];
+  const normKey = (s) => normU(s).replace(/[^A-Z0-9]+/g,' ').trim();
+
+  const PURPLE_PROGRAMS = [
+    "ANIMACION 3D",
+    "ANIMACION DIGITAL",
+    "ATENCION INTEGRAL AL CLIENTE",
+    "DESARROLLO DE MEDIOS GRAFICOS VISUALES",
+    "DESARROLLO DE VIDEOJUEGOS Y ENTORNOS INTERACTIVOS",
+    "DESARROLLO MULTIMEDIA Y WEB",
+    "DESARROLLO PUBLICITARIO",
+    "GESTION AGROEMPRESARIAL",
+    "PRESELECCION DE TALENTO HUMANO MEDIADO POR HERRAMIENTAS TIC",
+    "PROGRAMACION DE APLICACIONES Y SERVICIOS PARA LA NUBE"
+  ];
+  const YELLOW_PROGRAMS = [
+    "APOYO ADMINISTRATIVO EN SALUD",
+    "ATENCION INTEGRAL A LA PRIMERA INFANCIA",
+    "ASESORIA COMERCIAL",
+    "ATENCION EN INCENDIOS, RESCATES Y OTRAS EMERGENCIAS",
+    "COCINA",
+    "COORDINACION DE PROCESOS LOGISTICOS",
+    "COORDINACION DE SERVICIOS HOTELEROS",
+    "COSMETOLOGIA Y ESTETICA INTEGRAL",
+    "CUIDADO BASICO DE PERSONAS CON DEPENDENCIA FUNCIONAL",
+    "DESARROLLO DE PROCESOS DE MERCADEO",
+    "DIRECCION DE VENTAS",
+    "EJECUCION DE PROGRAMAS DEPORTIVOS",
+    "ENFERMERIA",
+    "ENTRENAMIENTO DEPORTIVO",
+    "GESTION ADMINISTRATIVA DEL SECTOR SALUD",
+    "GESTION DE MERCADOS",
+    "GUIANZA TURISTICA",
+    "IMPLEMENTACION Y MANTENIMIENTO DE SISTEMAS DE INTERNET DE LAS COSAS",
+    "INTEGRACION DE OPERACIONES LOGISTICAS",
+    "MANTENIMIENTO DE EQUIPOS DE COMPUTO",
+    "OPERACION TURISTICA LOCAL",
+    "OPERACIONES COMERCIALES EN RETAIL",
+    "OPERACIONES DE COMERCIO EXTERIOR",
+    "PANIFICACION",
+    "PELUQUERIA",
+    "PROCESOS PARA LA COMERCIALIZACION INTERNACIONAL",
+    "PROMOTOR DE SALUD",
+    "REGENCIA DE FARMACIA",
+    "RESCATE ACUATICO EN AGUAS CONFINADAS",
+    "SERVICIO DE RESTAURANTE Y BAR",
+    "SERVICIOS DE ALOJAMIENTO",
+    "SERVICIOS DE BARISMO",
+    "SERVICIOS DE BARTENDER",
+    "SERVICIOS FARMACEUTICOS",
+    "SUPERVISION DE VENTAS"
+  ];
+  const BLUE_PROGRAMS = [
+    "ASISTENCIA ADMINISTRATIVA",
+    "ASISTENCIA EN ORGANIZACION DE ARCHIVOS",
+    "CONTABILIZACION DE OPERACIONES COMERCIALES Y FINANCIERAS",
+    "GESTION CONTABLE Y DE INFORMACION FINANCIERA",
+    "GESTION DEL TALENTO HUMANO",
+    "GESTION DOCUMENTAL",
+    "GESTION EMPRESARIAL",
+    "PROGRAMACION DE SOFTWARE",
+    "RECURSOS HUMANOS",
+    "SISTEMAS TELEINFORMATICOS",
+    "SISTEMAS",
+    "ANALISIS Y DESARROLLO DE SISTEMAS DE INFORMACION",
+    "ANALISIS Y DESARROLLO DE SOFTWARE"
+  ];
+
+  const PURPLE_KEYS = new Set(PURPLE_PROGRAMS.map(normKey));
+  const YELLOW_KEYS = new Set(YELLOW_PROGRAMS.map(normKey));
+  const BLUE_KEYS = new Set(BLUE_PROGRAMS.map(normKey));
+
+
+  const PROGRAM_COLOR_BY_NORM = (() => {
+    const m = new Map();
+    const put = (arr, color) => arr.forEach(p => m.set(normU(p), color));
+    put(PURPLE_PROGRAMS, "purple");
+    put(YELLOW_PROGRAMS, "yellow");
+    put(BLUE_PROGRAMS, "blue");
+    return m;
+  })();
+
+
+  const BASE_ALLOWED_ESTADOS = new Set([
+    "EN EJECUCION","EN EJECUCIÓN",
+    "EN MATRICULA","EN MATRÍCULA",
+    "EN INDUCCION","EN INDUCCIÓN"
+  ].map(normU));
+
+  const filters = {
+    modalidad: new Set(), // múltiple; vacío = todos
+    especial: new Set(),  // múltiple; vacío = todos
+    municipios: new Set(),// múltiple; vacío = no filtra
+    programa: new Set(), // múltiple; vacío = todos
+    q: ""
+  };
+
+  const sortState = {
+    key: null,
+    dir: "asc" // asc | desc
+  };
+
+  const pageState = { page: 1, size: 10 }; // paginación
+
+
+  let enabledModalidades = new Set(MODALIDADES);
+  let enabledEspeciales = new Set(ESPECIALES);
+  let enabledMunicipios = new Set();
+
+  
+
+  // ================= Footer spacing =================
+  // Evita superposición cuando el footer es fijo/sticky (si no lo es, no afecta).
+  function adjustFooterSpace(){
+    const footer = document.querySelector("footer");
+    if(!footer) return;
+    // Medición real
+    const h = Math.ceil(footer.getBoundingClientRect().height || 0);
+    if(h <= 0) return;
+    // Reserva espacio inferior para que el contenido no quede oculto
+    // (24px de margen visual).
+    document.body.style.paddingBottom = `${h + 24}px`;
+  }
+  window.addEventListener("resize", adjustFooterSpace);
+
+// ================= Chips rendering =================
+  
+function renderMultiChips(container, labelAll, values, selectedSet, allFlag, availSet, onToggle){
+    const isAll = allFlag(); // vacío = todos
+    const avail = availSet || null;
+
+    // En lugar de inhabilitar, ocultamos opciones sin datos.
+    // Aun así, si una opción está seleccionada, siempre se muestra para poder desmarcarla.
+    const visibleValues = values.filter(v => {
+      const enabled = !avail || avail.has(v);
+      return enabled || selectedSet.has(v);
+    });
+
+    const chips = [
+      `<div class="chip all ${isAll ? 'active' : ''}" data-all="1" role="button" tabindex="0">${labelAll}</div>`,
+      ...visibleValues.map(v => {
+        const act = (!isAll && selectedSet.has(v)) ? "active" : "";
+        return `<div class="chip ${act}" data-val="${v.replaceAll('"','&quot;')}" role="button" tabindex="0">${v}</div>`;
+      })
+    ];
+
+    container.innerHTML = chips.join("");
+
+    container.querySelectorAll(".chip").forEach(ch => {
+      const click = () => {
+        if(ch.dataset.all){
+          selectedSet.clear();
+          onToggle("all");
+          return;
+        }
+        const v = ch.dataset.val;
+        if(selectedSet.has(v)) selectedSet.delete(v);
+        else selectedSet.add(v);
+        onToggle("val");
+      };
+      ch.addEventListener("click", click);
+      ch.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" ") click(); });
+    });
+  }
+  function renderAllFilterChips(avail){
+    // Modalidad
+    renderMultiChips($modalidadChips, "Todos", MODALIDADES, filters.modalidad, ()=>filters.modalidadAll, avail?avail.modalidad:null, (mode)=>{
+      filters.modalidadAll = (mode==="all");
+      if(filters.modalidadAll) filters.modalidad.clear();
+      if($modalidadSwitch) $modalidadSwitch.checked = filters.modalidadAll;
+      applyFilters();
+      const a = computeAvailableSets();
+      renderMunicipios(municipalities, a.municipios);
+      renderProgramas(programasFormacion, a.programa);
+      renderAllFilterChips(a);
+    });
+    // Programa especial
+    renderMultiChips($especialChips, "Todos", ESPECIALES, filters.especial, ()=>filters.especialAll, avail?avail.especial:null, (mode)=>{
+      filters.especialAll = (mode==="all");
+      if(filters.especialAll) filters.especial.clear();
+      if($especialSwitch) $especialSwitch.checked = filters.especialAll;
+      applyFilters();
+      const a = computeAvailableSets();
+      renderMunicipios(municipalities, a.municipios);
+      renderProgramas(programasFormacion, a.programa);
+      renderAllFilterChips(a);
+    });
+  }
+
+  function renderMunicipios(list, availSet){
+    const query = normU($muniSearch.value);
+    const avail = availSet || new Set(list);
+
+    // Mostrar solo municipios con datos (avail) y siempre visibles los seleccionados
+    const showSet = new Set([...avail, ...filters.municipios]);
+
+    // Conteo para ordenar (desc)
+    const counts = computeMunicipioCounts();
+
+    const items = Array.from(showSet)
+      .filter(m => m && normU(m).includes(query))
+      .sort((a,b)=>{
+        const ca = counts.get(a) || 0;
+        const cb = counts.get(b) || 0;
+        if(cb !== ca) return cb - ca;
+        return a.localeCompare(b,'es');
+      });
+
+    const html = items.map(m => {
+      const checked = filters.muniAll ? true : filters.municipios.has(m);
+      return `<label class="muni-item"><input type="checkbox" data-m="${m.replaceAll('"','&quot;')}" ${checked?'checked':''}> ${m}</label>`;
+    }).join("");
+
+    $muniChips.innerHTML = html || `<div class="muted">Sin municipios.</div>`;
+
+    // Delegación (un solo listener)
+    if(!$muniChips.dataset.bound){
+      $muniChips.addEventListener("change", ()=>{
+        // reconstruir selección desde el DOM
+        const sel = new Set();
+        $muniChips.querySelectorAll('input[type="checkbox"][data-m]').forEach(inp=>{
+          if(inp.checked) sel.add(inp.dataset.m);
+        });
+        // si se desmarca alguno, pasamos a selección manual
+        filters.muniAll = (sel.size === items.length && items.length>0);
+        filters.municipios = filters.muniAll ? new Set() : sel;
+
+        applyFilters();
+        const a = computeAvailableSets();
+        renderMunicipios(municipalities, a.municipios);
+        renderProgramas(programasFormacion, a.programa);
+        renderAllFilterChips(a);
+        syncGroupSwitches();
+      });
+      $muniChips.dataset.bound = "1";
+    }
+  }
+
+  
+  function renderProgramas(list, availSet){
+    const isAll = filters.programaAll;
+    // Todos chip
+    const allChip = `<div class="chip all ${isAll?'active':''}" data-all="1" role="button" tabindex="0">Todos</div>`;
+    document.getElementById("progChipsAll").innerHTML = allChip;
+    document.querySelector("#progChipsAll .chip").addEventListener("click", ()=>{
+      filters.programaAll = true;
+      filters.programa.clear();
+      if($progSwitch) $progSwitch.checked = true;
+      applyFilters();
+      const a = computeAvailableSets();
+      renderMunicipios(municipalities, a.municipios);
+      renderProgramas(programasFormacion, a.programa);
+      renderAllFilterChips(a);
+      syncGroupSwitches();
+    });
+
+    const byGroup = {purple:[], yellow:[], blue:[], other:[]};
+    for(const p of list){
+      const g = programGroupOf(p);
+      byGroup[g].push(p);
+    }
+    const renderGroup = (containerId, arr, cls) => {
+      const el = document.getElementById(containerId);
+
+      // Ocultar programas sin datos (según otros filtros), pero mantener visibles los seleccionados
+      const visible = arr.filter(p => {
+        const enabled = !availSet || availSet.has(p);
+        return enabled || filters.programa.has(p);
+      });
+
+      el.innerHTML = visible.map(p => {
+        const active = (!isAll && filters.programa.has(p)) ? "active" : "";
+        return `<div class="chip ${cls} ${active}" data-p="${p.replaceAll('"','&quot;')}" role="button" tabindex="0">${p}</div>`;
+      }).join("");
+
+      el.querySelectorAll(".chip").forEach(ch => {
+        const p = ch.dataset.p;
+        const toggle = () => {
+          filters.programaAll = false;
+          if($progSwitch) $progSwitch.checked = false;
+          if(filters.programa.has(p)) filters.programa.delete(p);
+          else filters.programa.add(p);
+          applyFilters();
+          const a = computeAvailableSets();
+          renderMunicipios(municipalities, a.municipios);
+          renderProgramas(programasFormacion, a.programa);
+          renderAllFilterChips(a);
+          syncGroupSwitches();
+        };
+        ch.addEventListener("click", toggle);
+        ch.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" ") toggle(); });
+      });
+    };
+;
+
+    renderGroup("progChipsPurple", byGroup.purple, "purple");
+    renderGroup("progChipsYellow", byGroup.yellow, "yellow");
+    renderGroup("progChipsBlue", byGroup.blue, "blue");
+    const othersWrap = document.getElementById("progGroupOthers");
+    if(byGroup.other.length){
+      othersWrap.style.display = "";
+      renderGroup("progChipsOther", byGroup.other, "");
+    } else {
+      othersWrap.style.display = "none";
+      document.getElementById("progChipsOther").innerHTML = "";
+    }
+    syncGroupSwitches();
+  }
+  // ================= XML parsing =================
+  function parseExcelXml(xmlText){
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(xmlText, "application/xml");
+    const parserErr = xml.querySelector("parsererror");
+    if(parserErr) throw new Error("Archivo XML inválido.");
+
+    const worksheet = xml.querySelector("Worksheet") || xml.querySelector("ss\\:Worksheet");
+    if(!worksheet) throw new Error("No se encontró Worksheet en el XML.");
+    const table = worksheet.querySelector("Table") || worksheet.querySelector("ss\\:Table");
+    if(!table) throw new Error("No se encontró Table en el XML.");
+
+    const rows = Array.from(table.querySelectorAll("Row, ss\\:Row"));
+    if(rows.length < 2) throw new Error("No hay suficientes filas.");
+
+    const grid = rows.map(r => {
+      const cells = Array.from(r.querySelectorAll("Cell, ss\\:Cell"));
+      const arr = [];
+      let col = 1;
+      for(const c of cells){
+        const idxAttr = c.getAttribute("ss:Index") || c.getAttribute("Index");
+        if(idxAttr) col = Number(idxAttr);
+        const d = c.querySelector("Data, ss\\:Data");
+        const val = d ? (d.textContent || "") : "";
+        arr[col-1] = val;
+        col += 1;
+      }
+      return arr.map(x => x ?? "");
+    });
+
+    // detectar encabezados
+    const NEED = ["IDENTIFICADOR_FICHA","NIVEL_FORMACION","ETAPA_FICHA","MODALIDAD_FORMACION","ESTADO_CURSO"];
+    const normHead = (s) => String(s||"").trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    let headerRowIndex = -1;
+    let bestScore = 0;
+    const scanLimit = Math.min(grid.length, 30);
+    for(let i=0;i<scanLimit;i++){
+      const row = grid[i].map(normHead);
+      const joined = row.join("|");
+      let score = 0;
+      for(const t of NEED) if(joined.includes(t)) score++;
+      if(score > bestScore){ bestScore = score; headerRowIndex = i; }
+      if(score >= 4){ headerRowIndex = i; break; }
+    }
+    if(headerRowIndex < 0 || bestScore < 2) throw new Error("No se detectó la fila de encabezados.");
+    const headers = grid[headerRowIndex].map(h => String(h||"").trim());
+    const dataRows = grid.slice(headerRowIndex + 1);
+    const data = dataRows.map(row => {
+      const obj = {};
+      headers.forEach((h,i)=>{ if(h) obj[h] = row[i] ?? ""; });
+      return obj;
+    }).filter(obj => Object.keys(obj).length > 3);
+
+    return { headers, data };
+  }
+
+  // ================= Transformación / reglas base =================
+  function buildReportRows(data){
+    const keyOf = (wanted) => {
+      const w = normU(wanted);
+      const keys = Object.keys(data[0] || {});
+      return keys.find(k => normU(k) === w) || keys.find(k => normU(k).includes(w)) || wanted;
+    };
+
+    const K = {
+      FICHA: keyOf("IDENTIFICADOR_FICHA"),
+      NIVEL: keyOf("NIVEL_FORMACION"),
+      PROG:  keyOf("NOMBRE_PROGRAMA_FORMACION"),
+      INI:   keyOf("FECHA_INICIO_FICHA"),
+      FIN:   keyOf("FECHA_TERMINACION_FICHA"),
+      ETAPA: keyOf("ETAPA_FICHA"),
+      MOD:   keyOf("MODALIDAD_FORMACION"),
+      RESP:  keyOf("NOMBRE_RESPONSABLE"),
+      MUN:   keyOf("NOMBRE_MUNICIPIO_CURSO"),
+      MASC:  keyOf("TOTAL_APRENDICES_MASCULINOS"),
+      FEM:   keyOf("TOTAL_APRENDICES_FEMENINOS"),
+      NOB:   keyOf("TOTAL_APRENDICES_NOBINARIO"),
+      TOT:   keyOf("TOTAL_APRENDICES"),
+      EST:   keyOf("ESTADO_CURSO"),
+      ESP:   keyOf("NOMBRE_PROGRAMA_ESPECIAL")
+    };
+
+    const today = new Date();
+    const out = [];
+
+    for(const r of data){
+      const nivel = normU(r[K.NIVEL]);
+      const etapa = normU(r[K.ETAPA]);
+      const estado = normU(r[K.EST]);
+
+      if(nivel === "CURSO ESPECIAL" || nivel === "EVENTO") continue;
+      if(etapa !== "LECTIVA") continue;
+      if(!BASE_ALLOWED_ESTADOS.has(estado)) continue;
+
+      const finFicha = parseDate(r[K.FIN]);
+      // Regla de cálculo de FIN_ETAPA_LECTIVA según NIVEL_FORMACION
+      let mesesLectiva = 6;
+      const nivelCalc = normU(r[K.NIVEL]);
+      if(nivelCalc === "OPERARIO" || nivelCalc === "AUXILIAR") mesesLectiva = 3;
+      const finLectiva = finFicha ? addMonths(finFicha, -mesesLectiva) : null;
+      const faltan = finLectiva ? daysDiff(today, finLectiva) : null;
+      // Excluir registros con días faltantes negativos
+      if(faltan != null && faltan < 0) continue;
+
+      let sem = "green";
+      if(faltan != null){
+        if(faltan < 90) sem = "red";
+        else if(faltan < 180) sem = "yellow";
+        else sem = "green";
+      }
+
+      const especialRaw = norm(r[K.ESP]);
+      const especial = especialRaw ? especialRaw : "SIN PROGRAMA ESPECIAL";
+
+      out.push({
+        IDENTIFICADOR_FICHA: norm(r[K.FICHA]),
+        NIVEL_FORMACION: norm(r[K.NIVEL]),
+        NOMBRE_PROGRAMA_FORMACION: norm(r[K.PROG]),
+        FECHA_INICIO_FICHA: fmtDate(parseDate(r[K.INI])),
+        FECHA_FIN_ETAPA_LECTIVA: fmtDate(finLectiva),
+        DIAS_FALTANTES: (faltan == null ? "" : faltan),
+        SEMAFORO: sem,
+        FECHA_TERMINACION_FICHA: fmtDate(finFicha),
+        ETAPA_FICHA: norm(r[K.ETAPA]),
+        MODALIDAD_FORMACION: norm(r[K.MOD]),
+        NOMBRE_RESPONSABLE: norm(r[K.RESP]),
+        NOMBRE_MUNICIPIO_CURSO: norm(r[K.MUN]),
+        TOTAL_APRENDICES_MASCULINOS: norm(r[K.MASC]),
+        TOTAL_APRENDICES_FEMENINOS: norm(r[K.FEM]),
+        TOTAL_APRENDICES_NOBINARIO: norm(r[K.NOB]),
+        TOTAL_APRENDICES: norm(r[K.TOT]),
+        NOMBRE_PROGRAMA_ESPECIAL: especial
+      });
+    }
+    return out;
+  }
+
+  // ================= Filtros + sort =================
+  function matchesFiltersExcluding(r, except){
+    if(except!=="modalidad" && filters.modalidad.size>0 && !filters.modalidad.has(norm(r.MODALIDAD_FORMACION))) return false;
+    if(except!=="especial" && filters.especial.size>0 && !filters.especial.has(norm(r.NOMBRE_PROGRAMA_ESPECIAL))) return false;
+    if(except!=="municipio" && filters.municipios.size>0 && !filters.municipios.has(norm(r.NOMBRE_MUNICIPIO_CURSO))) return false;
+
+    const q = normU(filters.q);
+    if(q){
+      const blob = normU([
+        r.IDENTIFICADOR_FICHA, r.NOMBRE_PROGRAMA_FORMACION, r.NIVEL_FORMACION,
+        r.MODALIDAD_FORMACION, r.NOMBRE_RESPONSABLE, r.NOMBRE_MUNICIPIO_CURSO, r.NOMBRE_PROGRAMA_ESPECIAL
+      ].join(" "));
+      if(!blob.includes(q)) return false;
+    }
+    return true;
+  }
+
+  function recomputeEnabledSets(){
+    const mset = new Set();
+    const eset = new Set();
+    const munset = new Set();
+
+    for(const r of allRows){
+      if(matchesFiltersExcluding(r,"modalidad")) mset.add(norm(r.MODALIDAD_FORMACION));
+      if(matchesFiltersExcluding(r,"especial")) eset.add(norm(r.NOMBRE_PROGRAMA_ESPECIAL));
+      if(matchesFiltersExcluding(r,"municipio")) munset.add(norm(r.NOMBRE_MUNICIPIO_CURSO));
+    }
+
+    enabledModalidades = mset.size ? mset : new Set(MODALIDADES);
+    enabledEspeciales = eset.size ? eset : new Set(ESPECIALES);
+    enabledMunicipios = munset;
+
+    for(const v of Array.from(filters.modalidad)) if(!enabledModalidades.has(v)) filters.modalidad.delete(v);
+    for(const v of Array.from(filters.especial)) if(!enabledEspeciales.has(v)) filters.especial.delete(v);
+    for(const v of Array.from(filters.municipios)) if(enabledMunicipios.size>0 && !enabledMunicipios.has(v)) filters.municipios.delete(v);
+  }
+
+  function matchesFilters(r){
+    if(!filters.modalidadAll){ if(filters.modalidad.size===0) return false; if(!filters.modalidad.has(norm(r.MODALIDAD_FORMACION))) return false; }
+    if(!filters.especialAll){ if(filters.especial.size===0) return false; if(!filters.especial.has(norm(r.NOMBRE_PROGRAMA_ESPECIAL))) return false; }
+    if(!filters.muniAll){ if(filters.municipios.size===0) return false; if(!filters.municipios.has(norm(r.NOMBRE_MUNICIPIO_CURSO))) return false; }
+    if(!filters.programaAll){ if(filters.programa.size===0) return false; if(!filters.programa.has(norm(r.NOMBRE_PROGRAMA_FORMACION))) return false; }
+const q = normU(filters.q);
+    if(q){
+      const blob = normU([
+        r.IDENTIFICADOR_FICHA, r.NOMBRE_PROGRAMA_FORMACION, r.NIVEL_FORMACION,
+        r.MODALIDAD_FORMACION, r.NOMBRE_RESPONSABLE, r.NOMBRE_MUNICIPIO_CURSO, r.NOMBRE_PROGRAMA_ESPECIAL
+      ].join(" "));
+      if(!blob.includes(q)) return false;
+    }
+    return true;
+  }
+
+  function matchesFiltersExcept(r, facet){
+    if(facet !== "modalidad" && !filters.modalidadAll){ if(filters.modalidad.size===0) return false; if(!filters.modalidad.has(norm(r.MODALIDAD_FORMACION))) return false; }
+    if(facet !== "especial" && !filters.especialAll){ if(filters.especial.size===0) return false; if(!filters.especial.has(norm(r.NOMBRE_PROGRAMA_ESPECIAL))) return false; }
+    if(facet !== "municipios" && !filters.muniAll){ if(filters.municipios.size===0) return false; if(!filters.municipios.has(norm(r.NOMBRE_MUNICIPIO_CURSO))) return false; }
+    if(facet !== "programa" && !filters.programaAll){ if(filters.programa.size===0) return false; if(!filters.programa.has(norm(r.NOMBRE_PROGRAMA_FORMACION))) return false; }
+const q = normU(filters.q);
+    if(q){
+      const blob = normU([
+        r.IDENTIFICADOR_FICHA, r.NOMBRE_PROGRAMA_FORMACION, r.NIVEL_FORMACION,
+        r.MODALIDAD_FORMACION, r.NOMBRE_RESPONSABLE, r.NOMBRE_MUNICIPIO_CURSO, r.NOMBRE_PROGRAMA_ESPECIAL
+      ].join(" "));
+      if(!blob.includes(q)) return false;
+    }
+    return true;
+  }
+
+  
+  function computeMunicipioCounts(){
+    const m = new Map();
+    for(const r of allRows){
+      if(matchesFiltersExcept(r, "municipios")){
+        const k = norm(r.NOMBRE_MUNICIPIO_CURSO);
+        m.set(k, (m.get(k)||0) + 1);
+      }
+    }
+    return m;
+  }
+
+function computeAvailableSets(){
+    const avail = {modalidad:new Set(), especial:new Set(), municipios:new Set(), programa:new Set()};
+    for(const r of allRows){
+      if(matchesFiltersExcept(r, "modalidad")) avail.modalidad.add(norm(r.MODALIDAD_FORMACION));
+      if(matchesFiltersExcept(r, "especial")) avail.especial.add(norm(r.NOMBRE_PROGRAMA_ESPECIAL));
+      if(matchesFiltersExcept(r, "municipios")) avail.municipios.add(norm(r.NOMBRE_MUNICIPIO_CURSO));
+      if(matchesFiltersExcept(r, "programa")) avail.programa.add(norm(r.NOMBRE_PROGRAMA_FORMACION));
+    }
+    return avail;
+  }
+
+
+  function syncGroupSwitches(){
+    if(!$progSwitch) return;
+    $progSwitch.checked = filters.programaAll;
+
+    const sel = filters.programa;
+    const groupChecked = (keysSet) => {
+      if(filters.programaAll) return false;
+      // checked if every present program of that group is selected
+      const present = programasFormacion.filter(p => keysSet.has(normKey(p)));
+      if(present.length===0) return false;
+      return present.every(p => sel.has(p));
+    };
+    if($purpleSwitch) $purpleSwitch.checked = groupChecked(PURPLE_KEYS);
+    if($yellowSwitch) $yellowSwitch.checked = groupChecked(YELLOW_KEYS);
+    if($blueSwitch) $blueSwitch.checked = groupChecked(BLUE_KEYS);
+  }
+
+  function toggleGroupPrograms(keysSet, sw){
+    filters.programaAll = false;
+    if($progSwitch) $progSwitch.checked = false;
+    const present = programasFormacion.filter(p => keysSet.has(normKey(p)));
+    if(sw.checked){
+      present.forEach(p => filters.programa.add(p));
+    } else {
+      present.forEach(p => filters.programa.delete(p));
+    }
+    applyFilters();
+    const a = computeAvailableSets();
+    renderMunicipios(municipalities, a.municipios);
+    renderProgramas(programasFormacion, a.programa);
+    renderAllFilterChips(a);
+    syncGroupSwitches();
+  }
+  function programColorClass(p){
+    const c = PROGRAM_COLOR_BY_NORM.get(normKey(p));
+    if(c === "purple") return "color-purple";
+    if(c === "yellow") return "color-yellow";
+    if(c === "blue") return "color-blue";
+    return "";
+  }
+
+
+  function programGroupOf(p){
+    const c = PROGRAM_COLOR_BY_NORM.get(normKey(p));
+    if(c === "purple") return "purple";
+    if(c === "yellow") return "yellow";
+    if(c === "blue") return "blue";
+    return "other";
+  }
+
+    function buildOrderedProgramList(rows){
+    // Mapa de nombre visible + prioridad de nivel (TECNÓLOGO, TÉCNICO, OPERARIO, AUXILIAR)
+    const present = new Map(); // normKey -> display
+    const levelPri = new Map(); // normKey -> 0..3
+
+    const toLevelPri = (nivel) => {
+      const n = normU(nivel);
+      if(n.includes("TECNOLOG")) return 0;
+      if(n.includes("TECNIC")) return 1;
+      if(n.includes("OPERARIO")) return 2;
+      if(n.includes("AUXILIAR")) return 3;
+      return 9;
+    };
+
+    for(const r of rows){
+      const prog = norm(r.NOMBRE_PROGRAMA_FORMACION);
+      if(!prog) continue;
+      const k = normKey(prog);
+      if(!present.has(k)) present.set(k, prog);
+
+      const pri = toLevelPri(r.NIVEL_FORMACION);
+      if(!levelPri.has(k) || pri < levelPri.get(k)) levelPri.set(k, pri);
+    }
+
+    // Índices según listas de color (para mantener el orden declarado cuando aplica)
+    const idxMap = (arr) => {
+      const m = new Map();
+      arr.forEach((name,i)=>m.set(normKey(name), i));
+      return m;
+    };
+    const PURPLE_IDX = idxMap(PURPLE_PROGRAMS);
+    const YELLOW_IDX = idxMap(YELLOW_PROGRAMS);
+    const BLUE_IDX   = idxMap(BLUE_PROGRAMS);
+
+    const colorIndex = (k, group) => {
+      if(group === "purple") return PURPLE_IDX.has(k) ? PURPLE_IDX.get(k) : 9999;
+      if(group === "yellow") return YELLOW_IDX.has(k) ? YELLOW_IDX.get(k) : 9999;
+      if(group === "blue")   return BLUE_IDX.has(k)   ? BLUE_IDX.get(k)   : 9999;
+      return 9999;
+    };
+
+    const all = Array.from(present.entries()).map(([k, disp]) => {
+      const group = programGroupOf(disp);
+      return {k, disp, pri: levelPri.get(k) ?? 9, group, idx: colorIndex(k, group)};
+    });
+
+    // Orden: Tecnólogo -> Técnico -> Operario -> Auxiliar, luego dentro de cada nivel:
+    // 1) orden de lista por color (si existe), 2) alfabético.
+    all.sort((a,b)=>{
+      if(a.pri !== b.pri) return a.pri - b.pri;
+      if(a.idx !== b.idx) return a.idx - b.idx;
+      return a.disp.localeCompare(b.disp, "es");
+    });
+
+    return all.map(x=>x.disp);
+  }
+  function applyFilters(){
+    pageState.page = 1;
+    viewRows = allRows.filter(matchesFilters);
+    applySort();
+    const avail = computeAvailableSets();
+    enabledModalidades = avail.modalidad;
+    enabledEspeciales = avail.especial;
+    enabledMunicipios = avail.municipios;
+    renderAllFilterChips(avail);
+    renderMunicipios(municipalities, avail.municipios);
+    renderProgramas(programasFormacion, avail.programa);
+    renderAll();
+  }
+
+  function applySort(){
+    if(!sortState.key) return;
+    const key = sortState.key;
+    const dir = sortState.dir === "asc" ? 1 : -1;
+
+    const isNumKey = new Set(["DIAS_FALTANTES","TOTAL_APRENDICES","TOTAL_APRENDICES_MASCULINOS","TOTAL_APRENDICES_FEMENINOS","TOTAL_APRENDICES_NOBINARIO"]);
+    const isDateKey = new Set(["FECHA_INICIO_FICHA","FECHA_FIN_ETAPA_LECTIVA","FECHA_TERMINACION_FICHA"]);
+
+    viewRows.sort((a,b)=>{
+      let va = a[key] ?? "";
+      let vb = b[key] ?? "";
+
+      if(isNumKey.has(key)){
+        return (toNum(va) - toNum(vb)) * dir;
+      }
+      if(isDateKey.has(key)){
+        const da = parseDate(va) || new Date(0);
+        const db = parseDate(vb) || new Date(0);
+        return (da - db) * dir;
+      }
+      va = normU(va);
+      vb = normU(vb);
+      if(va < vb) return -1*dir;
+      if(va > vb) return 1*dir;
+      return 0;
+    });
+  }
+
+  // ================= Render table + KPIs =================
+  function renderKPIs(){
+    const regs = viewRows.length;
+
+    // Aprendices
+    let sumT=0, sumM=0, sumF=0, sumN=0;
+
+    // Fichas por umbral de días
+    let f90 = 0, f180 = 0;
+
+    // Fichas por modalidad
+    const modCounts = { PRESENCIAL:0, VIRTUAL:0, DISTANCIA:0 };
+
+    // Fichas por nivel
+    const lvlCounts = { TECNOLOGO:0, TECNICO:0, OPERARIO:0, AUXILIAR:0 };
+
+    const normKey = (s)=> String(s??"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^\w\s]/g," ").replace(/\s+/g," ").trim();
+
+    const pickMod = (s)=>{
+      const k = normKey(s);
+      if(k.includes("VIRTUAL")) return "VIRTUAL";
+      if(k.includes("DISTANCIA") || k.includes("A DISTANCIA")) return "DISTANCIA";
+      return "PRESENCIAL";
+    };
+
+    const pickLvl = (s)=>{
+      const k = normKey(s);
+      if(k.includes("TECNOLOG")) return "TECNOLOGO";
+      if(k.includes("TECNIC")) return "TECNICO";
+      if(k.includes("OPERARI")) return "OPERARIO";
+      if(k.includes("AUXILI")) return "AUXILIAR";
+      return null;
+    };
+
+    for(const r of viewRows){
+      // Aprendices
+      const t = toNum(r.TOTAL_APRENDICES);
+      sumT += t;
+      sumM += toNum(r.TOTAL_APRENDICES_MASCULINOS);
+      sumF += toNum(r.TOTAL_APRENDICES_FEMENINOS);
+      sumN += toNum(r.TOTAL_APRENDICES_NOBINARIO);
+
+      // Días faltantes (solo si es número)
+      const d = Number(r.DIAS_FALTANTES);
+      if(Number.isFinite(d)){
+        if(d < 90) f90++;
+        if(d < 180) f180++;
+      }
+
+      // Modalidad y nivel
+      const mk = pickMod(r.MODALIDAD_FORMACION);
+      modCounts[mk] = (modCounts[mk]||0) + 1;
+
+      const lk = pickLvl(r.NIVEL_FORMACION);
+      if(lk) lvlCounts[lk] = (lvlCounts[lk]||0) + 1;
+    }
+
+    const pct = (x) => sumT>0 ? (100*x/sumT) : 0;
+    const pM = pct(sumM), pF = pct(sumF), pN = pct(sumN);
+
+    $kTotalApr.textContent = String(sumT);
+    $kPctM.textContent = `${pM.toFixed(1)}%`;
+    $kPctF.textContent = `${pF.toFixed(1)}%`;
+    $kPctN.textContent = `${pN.toFixed(1)}%`;
+    $kRegs.textContent = String(regs);
+
+    // Nuevos KPI
+    const $kF90 = document.getElementById("kF90");
+    const $kF180 = document.getElementById("kF180");
+    if($kF90) $kF90.textContent = String(f90);
+    if($kF180) $kF180.textContent = String(f180);
+
+    const $kModP = document.getElementById("kModP");
+    const $kModV = document.getElementById("kModV");
+    const $kModD = document.getElementById("kModD");
+    if($kModP) $kModP.textContent = String(modCounts.PRESENCIAL||0);
+    if($kModV) $kModV.textContent = String(modCounts.VIRTUAL||0);
+    if($kModD) $kModD.textContent = String(modCounts.DISTANCIA||0);
+
+    const $kModBarP = document.getElementById("kModBarP");
+    const $kModBarV = document.getElementById("kModBarV");
+    const $kModBarD = document.getElementById("kModBarD");
+    const pctMod = (c)=> regs>0 ? (100*c/regs) : 0;
+    if($kModBarP) $kModBarP.style.width = `${Math.min(100, Math.max(0, pctMod(modCounts.PRESENCIAL||0)))}%`;
+    if($kModBarV) $kModBarV.style.width = `${Math.min(100, Math.max(0, pctMod(modCounts.VIRTUAL||0)))}%`;
+    if($kModBarD) $kModBarD.style.width = `${Math.min(100, Math.max(0, pctMod(modCounts.DISTANCIA||0)))}%`;
+
+
+    const $kLvlTecno = document.getElementById("kLvlTecno");
+    const $kLvlTec = document.getElementById("kLvlTec");
+    const $kLvlOp = document.getElementById("kLvlOp");
+    const $kLvlAux = document.getElementById("kLvlAux");
+    if($kLvlTecno) $kLvlTecno.textContent = String(lvlCounts.TECNOLOGO||0);
+    if($kLvlTec) $kLvlTec.textContent = String(lvlCounts.TECNICO||0);
+    if($kLvlOp) $kLvlOp.textContent = String(lvlCounts.OPERARIO||0);
+    if($kLvlAux) $kLvlAux.textContent = String(lvlCounts.AUXILIAR||0);
+
+    const $kBarM = document.getElementById("kBarM");
+    const $kBarF = document.getElementById("kBarF");
+    const $kBarN = document.getElementById("kBarN");
+    if($kBarM) $kBarM.style.width = `${Math.min(100, Math.max(0,pM))}%`;
+    if($kBarF) $kBarF.style.width = `${Math.min(100, Math.max(0,pF))}%`;
+    if($kBarN) $kBarN.style.width = `${Math.min(100, Math.max(0,pN))}%`;
+
+    const $kMenAbs = document.getElementById("kMenAbs");
+    const $kWomenAbs = document.getElementById("kWomenAbs");
+    const $kNbAbs = document.getElementById("kNbAbs");
+    if($kMenAbs) $kMenAbs.textContent = `${sumM.toLocaleString("es-CO")} aprendices registrados`;
+    if($kWomenAbs) $kWomenAbs.textContent = `${sumF.toLocaleString("es-CO")} aprendices registrados`;
+    if($kNbAbs) $kNbAbs.textContent = `${sumN.toLocaleString("es-CO")} aprendices registrados`;
+  }
+
+  function renderTable(){
+    $countTop.textContent = `${viewRows.length} resultados`;
+    $note.textContent = "";
+
+    const total = viewRows.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageState.size));
+    if(pageState.page > totalPages) pageState.page = totalPages;
+
+    const start = (pageState.page - 1) * pageState.size;
+    const pageRows = viewRows.slice(start, start + pageState.size);
+
+    const rowsHtml = pageRows.map(r => {
+      const dotClass = r.SEMAFORO === "red" ? "red" : (r.SEMAFORO === "yellow" ? "yellow" : "green");
+      return `<tr>
+        <td class="nowrap"><b>${r.IDENTIFICADOR_FICHA}</b></td>
+        <td>${r.NIVEL_FORMACION}</td>
+        <td>${r.NOMBRE_PROGRAMA_FORMACION}</td>
+        <td class="nowrap">${r.FECHA_INICIO_FICHA || ""}</td>
+        <td class="nowrap">${r.FECHA_FIN_ETAPA_LECTIVA || ""}</td>
+        <td class="nowrap"><div class="kpi"><span class="dot ${dotClass}"></span><span>${r.DIAS_FALTANTES}</span></div></td>
+        <td class="nowrap">${r.FECHA_TERMINACION_FICHA || ""}</td>
+        <td>${r.MODALIDAD_FORMACION}</td>
+        <td>${r.NOMBRE_RESPONSABLE}</td>
+        <td>${r.NOMBRE_MUNICIPIO_CURSO}</td>
+        <td class="nowrap">${r.TOTAL_APRENDICES_MASCULINOS}</td>
+        <td class="nowrap">${r.TOTAL_APRENDICES_FEMENINOS}</td>
+        <td class="nowrap">${r.TOTAL_APRENDICES_NOBINARIO}</td>
+        <td class="nowrap"><b>${r.TOTAL_APRENDICES}</b></td>
+      </tr>`;
+    }).join("");
+
+    $tbody.innerHTML = rowsHtml || `<tr><td colspan="14" class="muted">Sin resultados con los filtros actuales.</td></tr>`;
+
+    const $pager = document.getElementById("pager");
+    if($pager){
+      const from = total===0 ? 0 : (start + 1);
+      const to = Math.min(total, start + pageState.size);
+      $pager.innerHTML = `
+        <span class="info">Mostrando ${from}–${to} de ${total}</span>
+        <button class="pbtn" id="pPrev" ${pageState.page<=1?'disabled':''}>Anterior</button>
+        <div class="pnums" aria-label="Paginación">
+          ${Array.from({length: totalPages}, (_,i)=>i+1).map(p=>{
+            const active = (p===pageState.page) ? 'active' : '';
+            return `<button class="pnum ${active}" data-p="${p}">${p}</button>`;
+          }).join('')}
+        </div>
+        <button class="pbtn" id="pNext" ${pageState.page>=totalPages?'disabled':''}>Siguiente</button>
+      `;
+      const prev = document.getElementById("pPrev");
+      const next = document.getElementById("pNext");
+      if(prev) prev.addEventListener("click", ()=>{ if(pageState.page>1){ pageState.page--; renderAll(); }});
+      if(next) next.addEventListener("click", ()=>{ if(pageState.page<totalPages){ pageState.page++; renderAll(); }});
+      $pager.querySelectorAll(".pnum").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const p = Number(btn.dataset.p);
+          if(!Number.isFinite(p)) return;
+          pageState.page = p;
+          renderAll();
+        });
+      });
+}
+  }
+
+  function renderSortIndicators(){
+    document.querySelectorAll("thead th[data-key]").forEach(th => {
+      th.querySelectorAll(".sort-ind").forEach(s => s.remove());
+      if(th.dataset.key === sortState.key){
+        const ind = document.createElement("span");
+        ind.className = "sort-ind";
+        ind.textContent = sortState.dir === "asc" ? "▲" : "▼";
+        th.appendChild(ind);
+      }
+    });
+  }
+
+  function renderAll(){
+    renderKPIs();
+    const fc = document.getElementById('footerCount');
+    if(fc) fc.textContent = `${viewRows.length} registro(s)`;
+    renderTable();
+    renderSortIndicators();
+  }
+
+  
+  // ================= Export Excel (sin librerías externas) =================
+  function exportExcel(){
+    if(!viewRows.length) return alert("No hay resultados para exportar.");
+
+    // Construye un .xlsx real (sin librerías externas) usando ZIP (store) + SpreadsheetML
+    const headers = [
+      ["FICHA","IDENTIFICADOR_FICHA"],
+      ["NIVEL","NIVEL_FORMACION"],
+      ["PROGRAMA_FORMACION","NOMBRE_PROGRAMA_FORMACION"],
+      ["INICIO_FICHA","FECHA_INICIO_FICHA"],
+      ["FIN_ETAPA_LECTIVA","FECHA_FIN_ETAPA_LECTIVA"],
+      ["DIAS_FALTANTES","DIAS_FALTANTES"],
+      ["TERMINACION_FICHA","FECHA_TERMINACION_FICHA"],
+      ["MODALIDAD","MODALIDAD_FORMACION"],
+      ["RESPONSABLE","NOMBRE_RESPONSABLE"],
+      ["MUNICIPIO","NOMBRE_MUNICIPIO_CURSO"],
+      ["MASC","TOTAL_APRENDICES_MASCULINOS"],
+      ["FEM","TOTAL_APRENDICES_FEMENINOS"],
+      ["NOBIN","TOTAL_APRENDICES_NOBINARIO"],
+      ["TOTAL","TOTAL_APRENDICES"]
+    ];
+
+    const cols = headers.map(h=>h[0]);
+    const data = viewRows.map(r => headers.map(h => r[h[1]] ?? ""));
+
+    const xmlEscape = (s)=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+    // Estilos: 0=default, 1=celda con bordes, 2=encabezado bordes + negrita
+    const stylesXml =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="2">
+    <font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/></font>
+    <font><b/><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/></font>
+  </fonts>
+  <fills count="1"><fill><patternFill patternType="none"/></fill></fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border>
+      <left style="thin"/><right style="thin"/><top style="thin"/><bottom style="thin"/><diagonal/>
+    </border>
+  </borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="3">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1">
+      <alignment vertical="top" wrapText="1"/>
+    </xf>
+    <xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyAlignment="1">
+      <alignment vertical="top" wrapText="1"/>
+    </xf>
+  </cellXfs>
+</styleSheet>`;
+
+    const colWidths = [12,16,38,14,18,10,18,14,26,18,8,8,8,10];
+    const colsXml = colWidths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("");
+
+    function cellInlineStr(ref, s, styleId){
+      return `<c r="${ref}" t="inlineStr" s="${styleId}"><is><t>${xmlEscape(s)}</t></is></c>`;
+    }
+    function cellNum(ref, n, styleId){
+      return `<c r="${ref}" t="n" s="${styleId}"><v>${n}</v></c>`;
+    }
+    const A1 = (c,r)=>{
+      let col = "";
+      let x = c+1;
+      while(x>0){ const m=(x-1)%26; col=String.fromCharCode(65+m)+col; x=Math.floor((x-1)/26); }
+      return col + String(r+1);
+    };
+
+    let rowsXml = "";
+    let headerCells = "";
+    cols.forEach((h,c)=>{ headerCells += cellInlineStr(A1(c,0), h, 2); });
+    rowsXml += `<row r="1">${headerCells}</row>`;
+
+    data.forEach((rowVals, rIdx)=>{
+      let cells = "";
+      rowVals.forEach((v,c)=>{
+        const key = cols[c];
+        if(["DIAS_FALTANTES","MASC","FEM","NOBIN","TOTAL"].includes(key)){
+          const num = Number(String(v).replace(/[^\d\-\.]/g,""));
+          if(!isNaN(num) && String(v).trim()!==""){
+            cells += cellNum(A1(c,rIdx+1), num, 1);
+          } else {
+            cells += cellInlineStr(A1(c,rIdx+1), String(v??""), 1);
+          }
+        } else {
+          cells += cellInlineStr(A1(c,rIdx+1), String(v??""), 1);
+        }
+      });
+      rowsXml += `<row r="${rIdx+2}">${cells}</row>`;
+    });
+
+    const sheetXml =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <cols>${colsXml}</cols>
+  <sheetData>${rowsXml}</sheetData>
+</worksheet>`;
+
+    const workbookXml =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="REPORTE" sheetId="1" r:id="rId1"/>
+  </sheets>
+</workbook>`;
+
+    const relsXml =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+
+    const wbRelsXml =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+    const contentTypesXml =
+`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`;
+
+    function strToU8(str){ return new TextEncoder().encode(str); }
+    function u16(n){ return Uint8Array.from([n&255,(n>>>8)&255]); }
+    function u32(n){ return Uint8Array.from([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]); }
+
+    const crcTable = (()=> {
+      const t = new Uint32Array(256);
+      for(let i=0;i<256;i++){
+        let c=i;
+        for(let k=0;k<8;k++) c = (c & 1) ? (0xEDB88320 ^ (c>>>1)) : (c>>>1);
+        t[i]=c>>>0;
+      }
+      return t;
+    })();
+    function crc32(u8){
+      let c = 0xFFFFFFFF;
+      for(let i=0;i<u8.length;i++){
+        c = crcTable[(c ^ u8[i]) & 0xFF] ^ (c>>>8);
+      }
+      return (c ^ 0xFFFFFFFF)>>>0;
+    }
+
+    function zipStore(files){
+      const parts = [];
+      const central = [];
+      let offset = 0;
+
+      for(const f of files){
+        const nameU = strToU8(f.name);
+        const dataU = f.data;
+        const crc = crc32(dataU);
+
+        const localHeader = Uint8Array.from([0x50,0x4b,0x03,0x04,0x14,0x00,0x00,0x00,0x00,0x00]);
+        const timeDate = Uint8Array.from([0x00,0x00,0x00,0x00]);
+
+        const lh = [localHeader, timeDate, u32(crc), u32(dataU.length), u32(dataU.length), u16(nameU.length), u16(0), nameU, dataU];
+        const lhSize = lh.reduce((s,a)=>s+a.length,0);
+        parts.push(...lh);
+
+        const centralHeader = Uint8Array.from([0x50,0x4b,0x01,0x02,0x14,0x00,0x14,0x00,0x00,0x00,0x00,0x00]);
+        const ch = [centralHeader, timeDate, u32(crc), u32(dataU.length), u32(dataU.length), u16(nameU.length),
+                    u16(0),u16(0),u16(0),u16(0), u32(0), u32(offset), nameU];
+        central.push(...ch);
+
+        offset += lhSize;
+      }
+
+      const centralStart = offset;
+      const centralSize = central.reduce((s,a)=>s+a.length,0);
+
+      const endSig = Uint8Array.from([0x50,0x4b,0x05,0x06]);
+      const end = [endSig, u16(0),u16(0), u16(files.length),u16(files.length), u32(centralSize), u32(centralStart), u16(0)];
+
+      const all = [...parts, ...central, ...end];
+      const total = all.reduce((s,a)=>s+a.length,0);
+      const out = new Uint8Array(total);
+      let p=0;
+      for(const a of all){ out.set(a,p); p+=a.length; }
+      return out;
+    }
+
+    const files = [
+      {name:"[Content_Types].xml", data:strToU8(contentTypesXml)},
+      {name:"_rels/.rels", data:strToU8(relsXml)},
+      {name:"xl/workbook.xml", data:strToU8(workbookXml)},
+      {name:"xl/_rels/workbook.xml.rels", data:strToU8(wbRelsXml)},
+      {name:"xl/worksheets/sheet1.xml", data:strToU8(sheetXml)},
+      {name:"xl/styles.xml", data:strToU8(stylesXml)}
+    ];
+
+    const zipU8 = zipStore(files);
+    const blob = new Blob([zipU8], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "reporte_fichas_lectiva.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+
+  async function loadFromFile(file){
+    if(!file){
+      // $status removed = "Sin archivo";
+      allRows = []; viewRows = []; municipalities = []; programasFormacion = []; programasFormacion = [];
+      $tbody.innerHTML = `<tr><td colspan="14" class="muted">Cargue un archivo para ver resultados.</td></tr>`;
+      renderProgramas([], null);
+      renderAll();
+      return;
+    }
+    // $status removed = "Leyendo…";
+    try{
+      // Progreso de carga (0-100)
+      if($progressWrap) $progressWrap.style.display = "";
+      if($progressLabel) $progressLabel.textContent = "Cargando…";
+      if($progressBar) $progressBar.style.width = "0%";
+      if($progressPct) $progressPct.textContent = "0%";
+      if($dropzone) $dropzone.classList.add("drag");
+
+      const txt = await readFileAsTextWithProgress(file, (pct) => {
+        if($progressBar) $progressBar.style.width = pct + "%";
+        if($progressPct) $progressPct.textContent = pct + "%";
+      });
+
+      if($progressBar) $progressBar.style.width = "100%";
+      if($progressPct) $progressPct.textContent = "100%";
+
+      const { data } = parseExcelXml(txt);
+      allRows = buildReportRows(data);
+
+      const setM = new Set(allRows.map(r => norm(r.NOMBRE_MUNICIPIO_CURSO)).filter(Boolean));
+      municipalities = Array.from(setM).sort((a,b)=>a.localeCompare(b, "es"));
+
+
+      programasFormacion = buildOrderedProgramList(allRows);
+      filters.modalidadAll = true; filters.modalidad.clear();
+      filters.especialAll = true; filters.especial.clear();
+      filters.muniAll = true; filters.municipios.clear();
+      filters.programaAll = true; filters.programa.clear();
+      if($modalidadSwitch) $modalidadSwitch.checked = true;
+      if($especialSwitch) $especialSwitch.checked = true;
+      if($muniSwitch) $muniSwitch.checked = true;
+      if($progSwitch) $progSwitch.checked = true;
+      // reset filtros
+      filters.modalidadAll = true; filters.modalidad.clear();
+    filters.especialAll = true; filters.especial.clear();
+    filters.muniAll = true; filters.municipios.clear();
+    filters.programaAll = true; filters.programa.clear();
+    if($modalidadSwitch) $modalidadSwitch.checked = true;
+    if($especialSwitch) $especialSwitch.checked = true;
+    if($muniSwitch) $muniSwitch.checked = true;
+    if($progSwitch) $progSwitch.checked = true;
+    filters.q = "";
+      $q.value = "";
+      if($qTop) $qTop.value = "";
+      $muniSearch.value = "";
+
+      // render chips y tabla
+      renderAllFilterChips(null);
+      renderMunicipios(municipalities, null);
+
+      sortState.key = null;
+      sortState.dir = "asc";
+
+      viewRows = allRows.slice();
+      applyFilters();
+
+      // $status removed = `Archivo cargado: ${file.name} (${allRows.length} registros)`;
+      // Contraer/ocultar módulo de carga
+      if($uploadSummaryRight) $uploadSummaryRight.textContent = `${file.name} (${allRows.length} registros)`;
+      if($uploadAccordion) $uploadAccordion.open = false;
+      if($uploadCard) setTimeout(()=>{ $uploadCard.style.display = "none"; }, 350);
+      if($dropzone) $dropzone.classList.remove("drag");
+      if($progressLabel) $progressLabel.textContent = "Listo";
+      if($progressWrap) setTimeout(()=>{ $progressWrap.style.display = "none"; }, 450);
+
+      if($dropzone) $dropzone.classList.remove("drag");
+      if($progressWrap) $progressWrap.style.display = "none";
+      if($progressBar) $progressBar.style.width = "0%";
+      if($progressPct) $progressPct.textContent = "0%";
+      if($progressLabel) $progressLabel.textContent = "Error al cargar";
+      if($uploadSummaryRight) $uploadSummaryRight.textContent = "";
+      if($uploadCard) $uploadCard.style.display = "";
+      if($uploadAccordion) $uploadAccordion.open = true;
+
+      adjustFooterSpace();
+    } catch(err){
+      console.error(err);
+      // $status removed = "Error: " + (err && err.message ? err.message : "No se pudo procesar.");
+      allRows = []; viewRows = []; municipalities = [];
+      $tbody.innerHTML = `<tr><td colspan="14" class="muted">Cargue un archivo para ver resultados.</td></tr>`;
+      renderProgramas([], null);
+      renderAll();
+      adjustFooterSpace();
+    }
+  }
+
+// ================= Events =================
+
+  // Eventos de carga
+  if($file) $file.addEventListener("change", ()=> loadFromFile($file.files && $file.files[0]));
+
+  if($dropzone){
+    const openPicker = ()=>{ if($file) $file.click(); };
+    $dropzone.addEventListener("click", openPicker);
+    $dropzone.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" ") openPicker(); });
+    $dropzone.addEventListener("dragover", (e)=>{ e.preventDefault(); $dropzone.classList.add("drag"); });
+    $dropzone.addEventListener("dragleave", ()=>{ $dropzone.classList.remove("drag"); });
+    $dropzone.addEventListener("drop", (e)=>{
+      e.preventDefault(); $dropzone.classList.remove("drag");
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if(f) loadFromFile(f);
+    });
+  }
+
+  if($qTop){
+    if($qTop) $qTop.addEventListener("input", () => {
+      filters.q = $qTop.value;
+      $q.value = $qTop.value;
+      applyFilters();
+    });
+  }
+
+  if($clearBtn) $clearBtn.addEventListener("click", () => {
+    // Solo reinicia filtros (NO borra el archivo ni los datos cargados)
+    filters.modalidad.clear(); filters.modalidadAll = true;
+    filters.especial.clear();  filters.especialAll  = true;
+    filters.municipios.clear();filters.muniAll      = true;
+    filters.programa.clear();  filters.programaAll  = true;
+    filters.q = "";
+
+    $q.value = "";
+    if($qTop) $qTop.value = "";
+    $muniSearch.value = "";
+
+    if($modalidadSwitch) $modalidadSwitch.checked = true;
+    if($especialSwitch) $especialSwitch.checked = true;
+    if($muniSwitch) $muniSwitch.checked = true;
+    if($progSwitch) $progSwitch.checked = true;
+
+    applyFilters();
+    const a = computeAvailableSets();
+    renderMunicipios(municipalities, a.municipios);
+    renderProgramas(programasFormacion, a.programa);
+    renderAllFilterChips(a);
+    syncGroupSwitches();
+  });
+
+  if($modalidadSwitch){
+    if($modalidadSwitch) $modalidadSwitch.addEventListener("change", ()=>{
+      filters.modalidadAll = $modalidadSwitch.checked;
+      if(filters.modalidadAll) filters.modalidad.clear();
+      applyFilters();
+      const a = computeAvailableSets();
+      renderMunicipios(municipalities, a.municipios);
+      renderProgramas(programasFormacion, a.programa);
+      renderAllFilterChips(a);
+    });
+  }
+  if($especialSwitch){
+    if($especialSwitch) $especialSwitch.addEventListener("change", ()=>{
+      filters.especialAll = $especialSwitch.checked;
+      if(filters.especialAll) filters.especial.clear();
+      applyFilters();
+      const a = computeAvailableSets();
+      renderMunicipios(municipalities, a.municipios);
+      renderProgramas(programasFormacion, a.programa);
+      renderAllFilterChips(a);
+    });
+  }
+  if($muniSwitch){
+    if($muniSwitch) $muniSwitch.addEventListener("change", ()=>{
+      filters.muniAll = $muniSwitch.checked;
+      if(filters.muniAll) filters.municipios.clear();
+      applyFilters();
+      const a = computeAvailableSets();
+      renderMunicipios(municipalities, a.municipios);
+      renderProgramas(programasFormacion, a.programa);
+      renderAllFilterChips(a);
+    });
+  }
+  if($progSwitch){
+    if($progSwitch) $progSwitch.addEventListener("change", ()=>{
+      filters.programaAll = $progSwitch.checked;
+      if(filters.programaAll) filters.programa.clear();
+      applyFilters();
+      const a = computeAvailableSets();
+      renderMunicipios(municipalities, a.municipios);
+      renderProgramas(programasFormacion, a.programa);
+      renderAllFilterChips(a);
+      syncGroupSwitches();
+    });
+  }
+  if($purpleSwitch){ $purpleSwitch.addEventListener("change", ()=>toggleGroupPrograms(PURPLE_KEYS, $purpleSwitch)); }
+  if($yellowSwitch){ $yellowSwitch.addEventListener("change", ()=>toggleGroupPrograms(YELLOW_KEYS, $yellowSwitch)); }
+  if($blueSwitch){ $blueSwitch.addEventListener("change", ()=>toggleGroupPrograms(BLUE_KEYS, $blueSwitch)); }
+
+  if($muniSearch) $muniSearch.addEventListener("input", () => { const avail = computeAvailableSets(); renderMunicipios(municipalities, avail.municipios); });
+  if($muniAllBtn) $muniAllBtn.addEventListener("click", () => {
+    filters.municipios = new Set(municipalities);
+    applyFilters();
+    renderMunicipios(municipalities, null);
+  });
+  if($muniNoneBtn) $muniNoneBtn.addEventListener("click", () => {
+    filters.municipios = new Set();
+    applyFilters();
+    renderMunicipios(municipalities, null);
+  });
+
+  if($exportBtn) $exportBtn.addEventListener("click", exportExcel);
+
+  // ordenar columnas al click
+  document.querySelectorAll("thead th[data-key]").forEach(th => {
+    th.addEventListener("click", () => {
+      const key = th.dataset.key;
+      if(sortState.key === key){
+        sortState.dir = (sortState.dir === "asc") ? "desc" : "asc";
+      } else {
+        sortState.key = key;
+        sortState.dir = "asc";
+      }
+      applySort();
+      renderAll();
+    });
+  });
+
+  // Inicial (chips listos aunque no haya archivo)
+  renderAllFilterChips(null);
+  // Ajustar espacio inicial del footer
+  adjustFooterSpace();
+</script>
+</body>
+</html>
