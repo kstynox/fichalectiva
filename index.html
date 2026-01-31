@@ -307,6 +307,9 @@
     <div class="card-h"><h2>Filtros</h2></div>
     <div class="card-b" style="display:flex;flex-direction:column;gap:12px">
       <div class="row">
+        <select id="centroSel" class="search" style="min-width:280px;flex:0 1 420px" aria-label="Centro de formación">
+          <option value="">Todos los centros</option>
+        </select>
         <input id="q" class="search" type="search" placeholder="Buscar en ficha, programa, responsable, municipio…" aria-label="Buscar" />
         <span class="meta" id="countTop">0 resultados</span>
         <button class="btn subtle" id="clearBtn" type="button" aria-label="Limpiar filtros">Limpiar filtros</button>
@@ -441,9 +444,9 @@
         <div class="kpi-icon kpi-icon-amber" aria-hidden="true">⏳</div>
         <div class="kpi-tag kpi-tag-muted">Próximos 6 meses</div>
       </div>
-      <div class="kpi-card-label">Cierre &lt; 180 Días</div>
+      <div class="kpi-card-label">Cierre 90&ndash;179 Días</div>
       <div class="kpi-card-value" id="kF180">0</div>
-      <div class="kpi-card-sub">Fichas con cierre cercano</div>
+      <div class="kpi-card-sub">Fichas con cierre entre 90 y 179 días</div>
     </div>
 
     <div class="kpi-card kpi-card-critical">
@@ -711,6 +714,7 @@
   const $uploadCard = document.getElementById("uploadCard");
   const $uploadAccordion = document.getElementById("uploadAccordion");
   const $q = document.getElementById("q");
+  const $centroSel = document.getElementById("centroSel");
   const $qTop = document.getElementById("qTop");
   const $countTop = document.getElementById("countTop");
   const $clearBtn = document.getElementById("clearBtn");
@@ -749,6 +753,7 @@ const $modalidadSwitch = document.getElementById("modalidadSwitch");
   let viewRows = [];
   let municipalities = [];
   let programasFormacion = [];
+  let centrosFormacion = [];
 
   const MODALIDADES = ["PRESENCIAL","VIRTUAL","A DISTANCIA"];
   const ESPECIALES = [
@@ -852,6 +857,7 @@ const $modalidadSwitch = document.getElementById("modalidadSwitch");
     especial: new Set(),  // múltiple; vacío = todos
     municipios: new Set(),// múltiple; vacío = no filtra
     programa: new Set(), // múltiple; vacío = todos
+    centro: "", // único; "" = todos
     q: ""
   };
 
@@ -1145,7 +1151,8 @@ function renderMultiChips(container, labelAll, values, selectedSet, allFlag, ava
       NOB:   keyOf("TOTAL_APRENDICES_NOBINARIO"),
       TOT:   keyOf("TOTAL_APRENDICES"),
       EST:   keyOf("ESTADO_CURSO"),
-      ESP:   keyOf("NOMBRE_PROGRAMA_ESPECIAL")
+      ESP:   keyOf("NOMBRE_PROGRAMA_ESPECIAL"),
+      CENTRO: keyOf("NOMBRE_CENTRO")
     };
 
     const today = new Date();
@@ -1193,6 +1200,7 @@ function renderMultiChips(container, labelAll, values, selectedSet, allFlag, ava
         MODALIDAD_FORMACION: norm(r[K.MOD]),
         NOMBRE_RESPONSABLE: norm(r[K.RESP]),
         NOMBRE_MUNICIPIO_CURSO: norm(r[K.MUN]),
+        NOMBRE_CENTRO: norm(r[K.CENTRO]),
         TOTAL_APRENDICES_MASCULINOS: norm(r[K.MASC]),
         TOTAL_APRENDICES_FEMENINOS: norm(r[K.FEM]),
         TOTAL_APRENDICES_NOBINARIO: norm(r[K.NOB]),
@@ -1208,12 +1216,13 @@ function renderMultiChips(container, labelAll, values, selectedSet, allFlag, ava
     if(except!=="modalidad" && filters.modalidad.size>0 && !filters.modalidad.has(norm(r.MODALIDAD_FORMACION))) return false;
     if(except!=="especial" && filters.especial.size>0 && !filters.especial.has(norm(r.NOMBRE_PROGRAMA_ESPECIAL))) return false;
     if(except!=="municipio" && filters.municipios.size>0 && !filters.municipios.has(norm(r.NOMBRE_MUNICIPIO_CURSO))) return false;
+    if(except!=="centro" && filters.centro && norm(r.NOMBRE_CENTRO) !== norm(filters.centro)) return false;
 
     const q = normU(filters.q);
     if(q){
       const blob = normU([
         r.IDENTIFICADOR_FICHA, r.NOMBRE_PROGRAMA_FORMACION, r.NIVEL_FORMACION,
-        r.MODALIDAD_FORMACION, r.NOMBRE_RESPONSABLE, r.NOMBRE_MUNICIPIO_CURSO, r.NOMBRE_PROGRAMA_ESPECIAL
+        r.MODALIDAD_FORMACION, r.NOMBRE_RESPONSABLE, r.NOMBRE_MUNICIPIO_CURSO, r.NOMBRE_PROGRAMA_ESPECIAL, r.NOMBRE_CENTRO
       ].join(" "));
       if(!blob.includes(q)) return false;
     }
@@ -1245,11 +1254,12 @@ function renderMultiChips(container, labelAll, values, selectedSet, allFlag, ava
     if(!filters.especialAll){ if(filters.especial.size===0) return false; if(!filters.especial.has(norm(r.NOMBRE_PROGRAMA_ESPECIAL))) return false; }
     if(!filters.muniAll){ if(filters.municipios.size===0) return false; if(!filters.municipios.has(norm(r.NOMBRE_MUNICIPIO_CURSO))) return false; }
     if(!filters.programaAll){ if(filters.programa.size===0) return false; if(!filters.programa.has(norm(r.NOMBRE_PROGRAMA_FORMACION))) return false; }
-const q = normU(filters.q);
+    if(filters.centro && norm(r.NOMBRE_CENTRO)!==filters.centro) return false;
+    const q = normU(filters.q);
     if(q){
       const blob = normU([
         r.IDENTIFICADOR_FICHA, r.NOMBRE_PROGRAMA_FORMACION, r.NIVEL_FORMACION,
-        r.MODALIDAD_FORMACION, r.NOMBRE_RESPONSABLE, r.NOMBRE_MUNICIPIO_CURSO, r.NOMBRE_PROGRAMA_ESPECIAL
+        r.MODALIDAD_FORMACION, r.NOMBRE_RESPONSABLE, r.NOMBRE_MUNICIPIO_CURSO, r.NOMBRE_PROGRAMA_ESPECIAL, r.NOMBRE_CENTRO
       ].join(" "));
       if(!blob.includes(q)) return false;
     }
@@ -1261,11 +1271,12 @@ const q = normU(filters.q);
     if(facet !== "especial" && !filters.especialAll){ if(filters.especial.size===0) return false; if(!filters.especial.has(norm(r.NOMBRE_PROGRAMA_ESPECIAL))) return false; }
     if(facet !== "municipios" && !filters.muniAll){ if(filters.municipios.size===0) return false; if(!filters.municipios.has(norm(r.NOMBRE_MUNICIPIO_CURSO))) return false; }
     if(facet !== "programa" && !filters.programaAll){ if(filters.programa.size===0) return false; if(!filters.programa.has(norm(r.NOMBRE_PROGRAMA_FORMACION))) return false; }
-const q = normU(filters.q);
+    if(facet !== "centro" && filters.centro && norm(r.NOMBRE_CENTRO)!==filters.centro) return false;
+    const q = normU(filters.q);
     if(q){
       const blob = normU([
         r.IDENTIFICADOR_FICHA, r.NOMBRE_PROGRAMA_FORMACION, r.NIVEL_FORMACION,
-        r.MODALIDAD_FORMACION, r.NOMBRE_RESPONSABLE, r.NOMBRE_MUNICIPIO_CURSO, r.NOMBRE_PROGRAMA_ESPECIAL
+        r.MODALIDAD_FORMACION, r.NOMBRE_RESPONSABLE, r.NOMBRE_MUNICIPIO_CURSO, r.NOMBRE_PROGRAMA_ESPECIAL, r.NOMBRE_CENTRO
       ].join(" "));
       if(!blob.includes(q)) return false;
     }
@@ -1490,8 +1501,12 @@ function computeAvailableSets(){
       // Días faltantes (solo si es número)
       const d = Number(r.DIAS_FALTANTES);
       if(Number.isFinite(d)){
-        if(d < 90) f90++;
-        if(d < 180) f180++;
+        // No solapar: "<180" cuenta solo los que están entre 90 y 179 días
+        if(d < 90){
+          f90++;
+        }else if(d < 180){
+          f180++;
+        }
       }
 
       // Modalidad y nivel
@@ -1860,6 +1875,13 @@ function computeAvailableSets(){
     if(!file){
       // $status removed = "Sin archivo";
       allRows = []; viewRows = []; municipalities = []; programasFormacion = []; programasFormacion = [];
+      centrosFormacion = [];
+      filters.centro = "";
+      if($centroSel){
+        $centroSel.innerHTML = `<option value="">Centro de formación</option>`;
+        $centroSel.value = "";
+        $centroSel.disabled = true;
+      }
       $tbody.innerHTML = `<tr><td colspan="14" class="muted">Cargue un archivo para ver resultados.</td></tr>`;
       renderProgramas([], null);
       renderAll();
@@ -1888,7 +1910,28 @@ function computeAvailableSets(){
       const setM = new Set(allRows.map(r => norm(r.NOMBRE_MUNICIPIO_CURSO)).filter(Boolean));
       municipalities = Array.from(setM).sort((a,b)=>a.localeCompare(b, "es"));
 
-
+      // Centros de formación (NOMBRE_CENTRO)
+      const setC = new Set(allRows.map(r => norm(r.NOMBRE_CENTRO)).filter(Boolean));
+      centrosFormacion = Array.from(setC).sort((a,b)=>a.localeCompare(b, "es"));
+      if($centroSel){
+        // Si solo existe 1 centro, se selecciona automáticamente y se bloquea el control.
+        if(centrosFormacion.length === 1){
+          const only = centrosFormacion[0];
+          $centroSel.innerHTML = `<option value="${only.replaceAll('"','&quot;')}">${only}</option>`;
+          $centroSel.value = only;
+          $centroSel.disabled = true;
+          filters.centro = norm(only);
+        }else{
+          const opts = [
+            `<option value="">Todos los centros</option>`,
+            ...centrosFormacion.map(c => `<option value="${c.replaceAll('"','&quot;')}">${c}</option>`)
+          ];
+          $centroSel.innerHTML = opts.join("");
+          $centroSel.value = "";
+          $centroSel.disabled = false;
+          filters.centro = "";
+        }
+      }
       programasFormacion = buildOrderedProgramList(allRows);
       filters.modalidadAll = true; filters.modalidad.clear();
       filters.especialAll = true; filters.especial.clear();
@@ -1903,6 +1946,20 @@ function computeAvailableSets(){
     filters.especialAll = true; filters.especial.clear();
     filters.muniAll = true; filters.municipios.clear();
     filters.programaAll = true; filters.programa.clear();
+    if($centroSel){
+      if(centrosFormacion.length === 1){
+        const only = centrosFormacion[0];
+        filters.centro = norm(only);
+        $centroSel.value = only;
+        $centroSel.disabled = true;
+      }else{
+        filters.centro = "";
+        $centroSel.value = "";
+        $centroSel.disabled = false;
+      }
+    }else{
+      filters.centro = "";
+    }
     if($modalidadSwitch) $modalidadSwitch.checked = true;
     if($especialSwitch) $especialSwitch.checked = true;
     if($muniSwitch) $muniSwitch.checked = true;
@@ -1978,12 +2035,50 @@ function computeAvailableSets(){
     });
   }
 
+
+
+  // Búsqueda (barra principal)
+  if($q){
+    $q.addEventListener("input", () => {
+      filters.q = $q.value;
+      if($qTop) $qTop.value = $q.value;
+      applyFilters();
+    });
+  }
+
+  // Centro de formación (lista desplegable)
+  if($centroSel){
+    $centroSel.addEventListener("change", () => {
+      filters.centro = norm($centroSel.value);
+      applyFilters();
+      const a = computeAvailableSets();
+      renderMunicipios(municipalities, a.municipios);
+      renderProgramas(programasFormacion, a.programa);
+      renderAllFilterChips(a);
+      syncGroupSwitches();
+    });
+  }
+
   if($clearBtn) $clearBtn.addEventListener("click", () => {
     // Solo reinicia filtros (NO borra el archivo ni los datos cargados)
     filters.modalidad.clear(); filters.modalidadAll = true;
     filters.especial.clear();  filters.especialAll  = true;
     filters.municipios.clear();filters.muniAll      = true;
     filters.programa.clear();  filters.programaAll  = true;
+    if($centroSel){
+      if(centrosFormacion.length === 1){
+        const only = centrosFormacion[0];
+        filters.centro = norm(only);
+        $centroSel.value = only;
+        $centroSel.disabled = true;
+      }else{
+        filters.centro = "";
+        $centroSel.value = "";
+        $centroSel.disabled = false;
+      }
+    }else{
+      filters.centro = "";
+    }
     filters.q = "";
 
     $q.value = "";
